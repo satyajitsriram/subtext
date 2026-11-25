@@ -11,7 +11,7 @@ import {
   applyVictoryScoring,
   eliminatePlayer,
 } from "./engine";
-import { WORD_PAIRS } from "@/data/word-pairs";
+import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { GameSettings } from "./types";
 
 const baseSettings: GameSettings = {
@@ -44,7 +44,7 @@ describe("engine", () => {
   });
 
   it("picks word pair with filters", () => {
-    const res = pickWordPair(WORD_PAIRS, [], { includeSpicy: false, categories: [], difficulties: ["easy", "medium", "hard"] }, () => 0.1);
+    const res = pickWordPair(WORD_PAIRS_ALL, [], { includeSpicy: false, categories: [], difficulties: ["easy", "medium", "hard"] }, () => 0.1);
     expect(res.civilianWord).toBeTruthy();
     expect(res.undercoverWord).toBeTruthy();
   });
@@ -57,7 +57,7 @@ describe("engine", () => {
 
   it("civilian victory when no infiltrators remain", () => {
     const players = initPlayersFromNames(["A", "B", "C", "D"]);
-    const st = startNewGame(players, { ...baseSettings, numUndercovers: 1, numMrWhites: 1 }, WORD_PAIRS, [], () => 0.2);
+    const st = startNewGame(players, { ...baseSettings, numUndercovers: 1, numMrWhites: 1 }, WORD_PAIRS_ALL, [], () => 0.2);
     // eliminate all infiltrators
     const roles = new Map(st.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
     let s = st;
@@ -72,7 +72,7 @@ describe("engine", () => {
 
   it("infiltrators victory when one civilian remains", () => {
     const players = initPlayersFromNames(["A", "B", "C", "D", "E"]);
-    const st = startNewGame(players, { ...baseSettings, numUndercovers: 2, numMrWhites: 0 }, WORD_PAIRS, [], () => 0.3);
+    const st = startNewGame(players, { ...baseSettings, numUndercovers: 2, numMrWhites: 0 }, WORD_PAIRS_ALL, [], () => 0.3);
     const roles = new Map(st.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
     let s = st;
     // eliminate civilians until 1 remains
@@ -87,7 +87,7 @@ describe("engine", () => {
 
   it("applies scoring per official rules", () => {
     const players = initPlayersFromNames(["A", "B", "C", "D", "E"]);
-    let st = startNewGame(players, { ...baseSettings, numUndercovers: 1, numMrWhites: 1 }, WORD_PAIRS, [], () => 0.31);
+    let st = startNewGame(players, { ...baseSettings, numUndercovers: 1, numMrWhites: 1 }, WORD_PAIRS_ALL, [], () => 0.31);
     const roles = new Map(st.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
     // pretend infiltrators won
     const infiltrators = st.players.filter((p) => roles.get(p.id) !== "CIVILIAN").map((p) => p.id);

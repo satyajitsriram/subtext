@@ -2,7 +2,7 @@
 "use client";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
 import { GameSettings, GameState, Player, TieBreaker } from "./types";
-import { WORD_PAIRS } from "@/data/word-pairs";
+import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { applyVictoryScoring, beginRound, castVotes, checkVictory, eliminatePlayer, initPlayersFromNames, isLooseMatch, mrWhiteGuessVictory, startNewGame } from "./engine";
 
 type Action =
@@ -51,7 +51,7 @@ function reducer(state: GameState, action: Action): GameState {
     case "UPDATE_SETTINGS":
       return { ...state, settings: { ...state.settings, ...action.settings } };
     case "START_GAME": {
-      let pool = WORD_PAIRS.slice();
+      let pool = WORD_PAIRS_ALL.slice();
       if (typeof window !== "undefined") {
         try {
           const raw = localStorage.getItem("subtext_custom_pairs");

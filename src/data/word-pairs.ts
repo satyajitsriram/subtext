@@ -178,4 +178,168 @@ export const WORD_PAIRS: WordPair[] = [
   { a: "ferret", b: "weasel", category: "animals", difficulty: "easy" },
 ];
 
-// Placeholder: we will add more pairs to exceed 500 entries in subsequent edits.
+// Expanded dataset (adds 350+ more pairs across categories)
+function addTuples(target: WordPair[], tuples: [string, string][], category: string, difficulty: WordPair["difficulty"] = "easy", spicy = false) {
+  for (const [a, b] of tuples) target.push({ a, b, category, difficulty, spicy });
+}
+
+const EXTRA_WORDS: WordPair[] = [];
+
+addTuples(EXTRA_WORDS, [
+  ["coriander", "cilantro"], ["zucchini", "cucumber"], ["parmesan", "pecorino"], ["ham", "prosciutto"], ["salami", "chorizo"],
+  ["yogurt", "kefir"], ["gelato", "ice cream"], ["pita", "naan"], ["tortellini", "ravioli"], ["brown sugar", "molasses"],
+  ["lima bean", "edamame"], ["blackberry", "mulberry"], ["raspberry", "boysenberry"], ["pistachio", "almond"], ["walnut", "pecan"],
+  ["cider", "juice"], ["scone", "shortbread"], ["curry", "stew"], ["okra", "eggplant"], ["salsa", "pico de gallo"],
+  ["gazpacho", "minestrone"], ["tiramisu", "trifle"], ["panna cotta", "flan"], ["scone", "crumpet"], ["hash brown", "rosti"],
+  ["oyster", "clam"], ["shrimp", "prawn"], ["sardine", "anchovy"], ["cod", "haddock"], ["trout", "salmon"], ["bagel", "bublik"],
+  ["cannellini", "navy bean"], ["cabbage", "lettuce"], ["honeydew", "cantaloupe"], ["cocoa", "carob"], ["saffron", "turmeric"],
+  ["plum", "prune"], ["marmalade", "jam"], ["muffin", "cupcake"], ["coleslaw", "kimchi"]
+], "food", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["hare", "rabbit"], ["donkey", "mule"], ["antelope", "gazelle"], ["alligator", "crocodile"], ["eel", "lamprey"],
+  ["sparrow", "finch"], ["pigeon", "dove"], ["chimpanzee", "gorilla"], ["moose", "elk"], ["reindeer", "caribou"],
+  ["carp", "koi"], ["octopus", "squid"], ["owl", "eagle"], ["caterpillar", "grub"], ["boar", "hog"],
+  ["ant", "termite"], ["crab", "lobster"], ["scorpion", "spider"], ["falcon", "hawk"], ["tuna", "mackerel"],
+  ["panther", "jaguar"], ["cougar", "puma"], ["buffalo", "water buffalo"], ["camel", "dromedary"], ["salamander", "newt"],
+  ["orca", "beluga"], ["goat", "sheep"], ["koala", "wombat"], ["otter", "mink"], ["python", "boa"], ["ibis", "heron"],
+  ["flamingo", "stork"], ["ostrich", "emu"], ["dingo", "coyote"], ["lynx", "bobcat"], ["weasel", "stoat"]
+], "animals", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["teapot", "kettle"], ["plate", "platter"], ["ladle", "scoop"], ["saucepan", "pot"], ["mortar", "pestle"],
+  ["towel", "napkin"], ["curtain", "drape"], ["sheet", "blanket"], ["mattress", "topper"], ["pillow", "cushion"],
+  ["cabinet", "cupboard"], ["sofa", "settee"], ["armchair", "recliner"], ["stool", "ottoman"], ["painting", "print"],
+  ["statue", "sculpture"], ["vase", "urn"], ["bottle", "carafe"], ["glass", "goblet"], ["tumbler", "mug"],
+  ["thermometer", "barometer"], ["microscope", "telescope"], ["calculator", "abacus"], ["wallet", "purse"], ["briefcase", "satchel"],
+  ["backpack", "duffel"], ["suitcase", "valise"], ["sneaker", "trainer"], ["boot", "loafer"], ["sandal", "flip-flop"],
+  ["umbrella", "parasol"], ["glasses", "spectacles"], ["sunglasses", "shades"], ["helmet", "hard hat"], ["belt", "sash"],
+  ["scarf", "shawl"], ["apron", "smock"], ["notebook", "sketchbook"], ["crayon", "pastel"], ["marker", "felt-tip"]
+], "objects", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["village", "hamlet"], ["town", "city"], ["capital", "metropolis"], ["harbor", "marina"], ["pier", "jetty"],
+  ["desert", "dune"], ["jungle", "rainforest"], ["field", "meadow"], ["grove", "orchard"], ["hill", "knoll"],
+  ["mountain", "peak"], ["valley", "dale"], ["coast", "shore"], ["beach", "shoreline"], ["bay", "gulf"],
+  ["strait", "channel"], ["peninsula", "isthmus"], ["plateau", "mesa"], ["cave", "cavern"], ["mine", "quarry"],
+  ["library", "archives"], ["museum", "gallery"], ["theater", "cinema"], ["plaza", "square"], ["park", "garden"],
+  ["fort", "citadel"], ["castle", "palace"], ["temple", "shrine"], ["cathedral", "basilica"], ["market", "bazaar"]
+], "places", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["USB-C", "Lightning"], ["wifi", "ethernet"], ["hotspot", "tethering"], ["pixel", "vector"], ["server", "gateway"],
+  ["backup", "snapshot"], ["restore", "rollback"], ["container", "virtual machine"], ["webhook", "polling"], ["avatar", "emoji"],
+  ["streaming", "downloading"], ["upload", "sync"], ["playlist", "queue"], ["bookmark", "favorite"], ["clipboard", "notepad"],
+  ["monitor", "display"], ["laptop", "tablet"], ["smartwatch", "fitness band"], ["headset", "earphone"], ["charger", "power bank"],
+  ["battery", "cell"], ["firmware", "bios"], ["kernel", "driver"], ["database", "spreadsheet"], ["proxy", "vpn"],
+  ["captcha", "passkey"], ["dark mode", "light mode"], ["keyboard", "keypad"], ["shortcut", "macro"], ["patch", "update"]
+], "tech", "medium");
+
+addTuples(EXTRA_WORDS, [
+  ["rugby", "football"], ["cricket", "baseball"], ["snooker", "billiards"], ["golf", "mini golf"], ["sailing", "rowing"],
+  ["kayaking", "rafting"], ["skiing", "snowboarding"], ["skating", "blading"], ["boxing", "wrestling"], ["judo", "karate"],
+  ["yoga", "pilates"], ["jogging", "running"], ["sprint", "dash"], ["relay", "hurdles"], ["shot put", "discus"],
+  ["long jump", "triple jump"], ["volleyball", "handball"], ["water polo", "synchronized swimming"], ["climbing", "bouldering"], ["fencing", "kendo"],
+  ["lacrosse", "field hockey"], ["pickleball", "paddle tennis"], ["taekwondo", "aikido"], ["parkour", "freerunning"], ["ultimate", "frisbee"]
+], "sports", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["hail", "sleet"], ["fog", "mist"], ["dew", "frost"], ["tide", "current"], ["cliff", "bluff"],
+  ["boulder", "rock"], ["pebble", "gravel"], ["sand", "silt"], ["soil", "loam"], ["vine", "ivy"],
+  ["bush", "shrub"], ["flower", "blossom"], ["leaf", "petal"], ["pine", "fir"], ["oak", "maple"],
+  ["birch", "aspen"], ["willow", "poplar"], ["cactus", "succulent"], ["aurora", "meteor"], ["rainbow", "halo"],
+  ["dune", "drift"], ["marsh", "fen"], ["tundra", "taiga"], ["delta", "estuary"], ["geyser", "hot spring"]
+], "nature", "medium");
+
+addTuples(EXTRA_WORDS, [
+  ["opera", "musical"], ["rap", "hip-hop"], ["blues", "jazz"], ["rock", "metal"], ["folk", "country"],
+  ["sonnet", "ode"], ["epic", "saga"], ["novel", "romance"], ["sketch", "study"], ["charcoal", "graphite"],
+  ["oil paint", "acrylic"], ["fresco", "mural"], ["calligraphy", "lettering"], ["monologue", "soliloquy"], ["duet", "duo"],
+  ["trio", "quartet"], ["chorus", "choir"], ["bridge", "refrain"], ["hook", "riff"], ["palette", "easel"],
+  ["stencil", "template"], ["origami", "tessellation"], ["limerick", "couplet"], ["haiku", "senryu"], ["harmony", "melody"]
+], "arts", "medium");
+
+addTuples(EXTRA_WORDS, [
+  ["dishwasher", "washer"], ["dryer", "dehumidifier"], ["heater", "radiator"], ["air purifier", "humidifier"], ["broom", "mop"],
+  ["vacuum", "sweeper"], ["trash can", "recycling bin"], ["spoon", "fork"], ["knife", "peeler"], ["grater", "zester"],
+  ["colander", "sieve"], ["tongs", "chopsticks"], ["coaster", "trivet"], ["placemat", "tablecloth"], ["bedsheet", "bedspread"],
+  ["duvet", "coverlet"], ["closet", "pantry"], ["vanity", "dresser"], ["lamp", "sconce"], ["bulb", "tube light"],
+  ["switch", "dimmer"], ["socket", "outlet"], ["hinge", "latch"], ["doorknob", "handle"], ["mirror", "vanity mirror"]
+], "home", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["notebook", "binder"], ["worksheet", "handout"], ["lecture", "lab"], ["exam", "quiz"], ["homework", "assignment"],
+  ["recess", "break"], ["principal", "dean"], ["teacher", "tutor"], ["student", "pupil"], ["essay", "report"],
+  ["graph", "chart"], ["map", "globe"], ["atlas", "almanac"], ["ruler", "meter stick"], ["eraser", "white-out"],
+  ["stapler", "paperclip"], ["glue", "tape"], ["pen", "pencil"], ["marker", "chalk"], ["calculator", "slide rule"],
+  ["hallway", "corridor"], ["auditorium", "gymnasium"], ["cafeteria", "canteen"], ["campus", "quad"], ["locker", "cubby"]
+], "school", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["chef", "cook"], ["actor", "performer"], ["singer", "vocalist"], ["driver", "chauffeur"], ["pilot", "captain"],
+  ["sailor", "seafarer"], ["miner", "prospector"], ["farmer", "rancher"], ["baker", "pastry chef"], ["butcher", "fishmonger"],
+  ["carpenter", "joiner"], ["plumber", "pipefitter"], ["electrician", "lineman"], ["mechanic", "technician"], ["tailor", "seamstress"],
+  ["designer", "stylist"], ["analyst", "consultant"], ["banker", "financier"], ["broker", "trader"], ["chemist", "biologist"],
+  ["physicist", "astronomer"], ["doctor", "surgeon"], ["nurse", "midwife"], ["paramedic", "EMT"], ["dentist", "orthodontist"]
+], "jobs", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["ticket", "boarding pass"], ["gate", "terminal"], ["platform", "station"], ["hostel", "guesthouse"], ["hotel", "motel"],
+  ["resort", "villa"], ["taxi", "rideshare"], ["bus", "shuttle"], ["subway", "tram"], ["ferry", "cruise"],
+  ["compass", "map"], ["guidebook", "itinerary"], ["backpack", "daypack"], ["souvenir", "keepsake"], ["passport", "visa"],
+  ["customs", "immigration"], ["duty-free", "tax-free"], ["tour", "excursion"], ["trek", "hike"], ["cruise", "voyage"],
+  ["sunrise", "sunset"], ["north", "south"], ["east", "west"], ["peak", "summit"], ["trail", "path"]
+], "travel", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["crimson", "scarlet"], ["navy", "indigo"], ["teal", "turquoise"], ["ivory", "cream"], ["beige", "tan"],
+  ["charcoal", "slate"], ["emerald", "jade"], ["amber", "gold"], ["maroon", "burgundy"], ["lavender", "lilac"],
+  ["pearl", "opal"], ["copper", "bronze"], ["cyan", "aqua"], ["magenta", "fuchsia"], ["olive", "moss"],
+  ["peach", "apricot"], ["azure", "cerulean"], ["silver", "steel"], ["black", "ebony"], ["white", "alabaster"]
+], "colors", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["jacket", "blazer"], ["coat", "parka"], ["jeans", "chinos"], ["shirt", "blouse"], ["dress", "gown"],
+  ["skirt", "kilt"], ["sweater", "cardigan"], ["hoodie", "pullover"], ["tie", "bow tie"], ["cap", "beanie"],
+  ["hat", "fedora"], ["gloves", "mittens"], ["socks", "stockings"], ["boots", "waders"], ["sneakers", "runners"],
+  ["sandals", "slides"], ["flip-flops", "thongs"], ["leggings", "tights"], ["belt", "sash"], ["robe", "kimono"]
+], "clothing", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["piano", "harpsichord"], ["trumpet", "cornet"], ["trombone", "euphonium"], ["oboe", "english horn"], ["clarinet", "bass clarinet"],
+  ["flute", "piccolo"], ["cello", "double bass"], ["guitar", "ukulele"], ["banjo", "mandolin"], ["drum", "timpani"],
+  ["synth", "sampler"], ["microphone", "mic"], ["amplifier", "preamp"], ["speaker", "monitor"], ["mixer", "console"],
+  ["metronome", "click track"], ["scale", "mode"], ["beat", "groove"], ["verse", "stanza"], ["chorus", "refrain"]
+], "music", "medium");
+
+addTuples(EXTRA_WORDS, [
+  ["hammer", "mallet"], ["saw", "hacksaw"], ["drill", "auger"], ["file", "rasp"], ["wrench", "spanner"],
+  ["pliers", "nippers"], ["chisel", "gouge"], ["level", "plumb line"], ["square", "bevel"], ["ruler", "tape measure"],
+  ["sander", "polisher"], ["staple gun", "nail gun"], ["ladder", "step stool"], ["wheelbarrow", "hand truck"], ["axe", "hatchet"],
+  ["hoe", "rake"], ["shovel", "spade"], ["pruner", "shears"], ["trowel", "dibber"], ["awl", "punch"]
+], "tools", "medium");
+
+addTuples(EXTRA_WORDS, [
+  ["sedan", "hatchback"], ["coupe", "convertible"], ["SUV", "crossover"], ["minivan", "microvan"], ["pickup", "ute"],
+  ["motorcycle", "scooter"], ["bicycle", "unicycle"], ["tram", "trolley"], ["subway", "metro"], ["train", "monorail"],
+  ["helicopter", "gyrocopter"], ["airplane", "glider"], ["sailboat", "yacht"], ["canoe", "kayak"], ["barge", "ferry"],
+  ["truck", "lorry"], ["bulldozer", "excavator"], ["forklift", "pallet jack"], ["rocket", "shuttle"], ["hoverboard", "segway"]
+], "vehicles", "easy");
+
+addTuples(EXTRA_WORDS, [
+  ["tea", "chai"], ["coffee", "mocha"], ["soda", "cola"], ["lemonade", "limeade"], ["smoothie", "milkshake"],
+  ["espresso", "americano"], ["cappuccino", "flat white"], ["latte", "macchiato"], ["herbal tea", "tisane"], ["sparkling water", "seltzer"],
+  ["cocoa", "hot chocolate"], ["juice", "nectar"], ["cider", "perry"], ["kombucha", "water kefir"], ["tonic", "ginger ale"],
+  ["iced tea", "sweet tea"], ["matcha", "sencha"], ["oolong", "pu-erh"], ["ginger beer", "root beer"], ["syrup", "cordial"]
+], "beverages", "easy");
+
+// Optional spicy/adult (off by default)
+addTuples(EXTRA_WORDS, [
+  ["flirting", "complimenting"], ["daydream", "fantasy"], ["wink", "nod"], ["scandal", "rumor"], ["tabloid", "gossip"],
+  ["blush", "flush"], ["silk", "satin"], ["boudoir", "bedroom"], ["masquerade", "costume party"], ["tease", "taunt"],
+  ["dare", "bet"], ["limerick", "innuendo"], ["sizzle", "spark"], ["secret", "whisper"], ["chemistry", "spark"],
+  ["flame", "ember"], ["jealousy", "envy"], ["crush", "infatuation"], ["mystery", "thriller"], ["midnight", "afterhours"]
+], "spicy", "medium", true);
+
+// Merge extras
+export const WORD_PAIRS_ALL: WordPair[] = [...WORD_PAIRS, ...EXTRA_WORDS];
