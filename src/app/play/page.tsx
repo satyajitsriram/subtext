@@ -177,19 +177,17 @@ export default function PlayPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] px-4 py-6">
+    <main className="min-h-[100dvh] px-4 pt-4 pb-[120px]">
       <div className="mx-auto max-w-md space-y-4">
-        <header className="text-center">
-          <h1 className="heading text-xl">Subtext</h1>
-        </header>
+        {/* top bar intentionally minimal per screen; remove redundant small 'Subtext' */}
 
         {view === "home" && (
           <div className="card p-6 space-y-4 text-center">
             <p className="text-sm text-muted-foreground">Offline party word game</p>
-            <button onClick={() => setView("players")} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
+            <button onClick={() => setView("players")} className="btn-primary w-full">
               Start
             </button>
-            <button onClick={() => setView("leaderboard")} className="tap-target w-full rounded-lg border border-accent/40 px-4 py-3 font-medium">
+            <button onClick={() => setView("leaderboard")} className="btn-secondary w-full">
               Leaderboard
             </button>
           </div>
@@ -247,11 +245,12 @@ export default function PlayPage() {
                 </span>
               ))}
             </div>
-            <div className="grid grid-cols-1 gap-2">
-              <button disabled={state.players.length < 3} onClick={onSavePlayers} className="tap-target w-full rounded-md bg-accent px-4 py-2 font-medium text-black disabled:opacity-40">
+            <div className="h-4" />
+            <div className="action-bar">
+              <button disabled={state.players.length < 3} onClick={onSavePlayers} className="btn-primary w-full" aria-disabled={state.players.length < 3}>
                 Continue to Setup
               </button>
-              <button onClick={() => setView("home")} className="tap-target w-full rounded-md border border-accent/40 px-4 py-2 font-medium">
+              <button onClick={() => setView("home")} className="btn-secondary w-full">
                 Back
               </button>
             </div>
@@ -262,6 +261,12 @@ export default function PlayPage() {
           <div className="space-y-3">
             <div className="card p-4 space-y-3">
               <div className="text-sm text-muted-foreground">Players: {state.players.length}</div>
+              {/* Role summary */}
+              <div className="flex flex-wrap gap-2">
+                <span className="role-badge bg-green-600/15 text-green-300">Civilians {Math.max(0, state.players.length - state.settings.numUndercovers - state.settings.numMrWhites)}</span>
+                <span className="role-badge bg-red-600/15 text-red-300">Undercovers {state.settings.numUndercovers}</span>
+                <span className="role-badge bg-yellow-600/20 text-yellow-300">Mr. White {state.settings.numMrWhites}</span>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm text-muted-foreground">Undercovers</label>
@@ -332,10 +337,21 @@ export default function PlayPage() {
                   </div>
                 </div>
               </div>
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm text-muted-foreground">Extra roles & word pool</summary>
+                <div className="mt-2 grid gap-2 text-sm text-foreground/90">
+                  <div className="flex flex-wrap gap-2">
+                    {(state.settings.categories.length === 0 ? ["All categories"] : state.settings.categories).map((c) => (
+                      <span key={c} className="role-badge border border-white/10">{c}</span>
+                    ))}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Optional specials are off by default to keep the classic game.</div>
+                </div>
+              </details>
             </div>
-            <button onClick={onDealWords} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
-              Deal Words
-            </button>
+            <div className="action-bar">
+              <button onClick={onDealWords} className="btn-primary w-full">Deal Words</button>
+            </div>
           </div>
         )}
 
@@ -354,7 +370,7 @@ export default function PlayPage() {
                   for (const p of state.players) flags[p.id] = true;
                   setRevealed(flags);
                 }}
-                className="tap-target w-full rounded-md border border-accent/40 px-4 py-2"
+                className="btn-secondary w-full"
               >
                 Reveal all (test)
               </button>
@@ -397,13 +413,16 @@ export default function PlayPage() {
                   );
                 })}
                 </div>
-                <button
-                  disabled={!canStartRound}
-                  onClick={startRound}
-                  className="tap-target mt-2 w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
-                >
-                  Start Round
-                </button>
+                <div className="action-bar">
+                  <button
+                    disabled={!canStartRound}
+                    onClick={startRound}
+                    className="btn-primary w-full"
+                    aria-disabled={!canStartRound}
+                  >
+                    Start Round
+                  </button>
+                </div>
               </div>
             ) : (
               (() => {
@@ -461,7 +480,7 @@ export default function PlayPage() {
                       </div>
                       <div>{state.settings.allowRecheckWord ? "Re-check enabled" : "No re-checks"}</div>
                     </div>
-                    <div className="thumb-bar">
+                    <div className="action-bar">
                       {revealIndex + 1 < state.players.length ? (
                         <button
                           disabled={!pid || isOpen || !hasRevealed[pid]}
@@ -470,13 +489,13 @@ export default function PlayPage() {
                             setRevealIndex(next);
                             setIsOpen(false);
                           }}
-                          className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
+                          className="btn-primary w-full"
                         >
                           Next Player
                         </button>
                       ) : null}
                       {revealIndex + 1 >= state.players.length ? (
-                        <button disabled={!state.players.every((pl) => hasRevealed[pl.id])} onClick={startRound} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40">
+                        <button disabled={!state.players.every((pl) => hasRevealed[pl.id])} onClick={startRound} className="btn-primary w-full" aria-disabled={!state.players.every((pl) => hasRevealed[pl.id])}>
                           Start Round
                         </button>
                       ) : null}
@@ -509,8 +528,8 @@ export default function PlayPage() {
               </ol>
             </div>
             <div className="text-xs text-muted-foreground">Remaining: {alivePlayers.map((p) => p.name).join(", ")}</div>
-            <div className="thumb-bar">
-              <button onClick={proceedVoting} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
+            <div className="action-bar">
+              <button onClick={proceedVoting} className="btn-primary w-full">
                 Proceed to Voting
               </button>
             </div>
@@ -532,8 +551,9 @@ export default function PlayPage() {
                   <button
                     key={p.id}
                     onClick={() => toggleVote(p.id)}
-                    className={`rounded-lg border p-4 text-center ${active ? "border-danger bg-danger/20" : "border-white/10 bg-muted-surface"}`}
+                    className={`vote-card rounded-lg border p-4 text-center ${active ? "active border-accent bg-muted-surface" : "border-white/10 bg-muted-surface"}`}
                   >
+                    <span className="check">✓</span>
                     <div className="mb-1"><Avatar name={p.name} /></div>
                     <div className="heading">{p.name}</div>
                   </button>
@@ -541,39 +561,41 @@ export default function PlayPage() {
               })}
             </div>
             {!tiedIds ? (
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={tieMode} onChange={(e) => setTieMode(e.target.checked)} />
-                  <span className="text-sm">Mark tie</span>
-                </label>
-                <div className="flex gap-2">
-                  {tieMode && selected.length >= 2 && (
-                    <button
-                      onClick={() => {
-                        setTiedIds([...selected]);
-                        setSelected([]);
-                        setTieMode(false);
-                      }}
-                      className="tap-target rounded-lg border border-accent/40 px-4 py-2 font-medium"
-                    >
-                      Start Tie Face-off
-                    </button>
-                  )}
+              <div className="action-bar">
+                <button
+                  onClick={() => setTieMode((m) => !m)}
+                  className={`btn-secondary w-full ${tieMode ? "btn-toggle-on" : ""}`}
+                >
+                  {tieMode ? "Tie mode: On" : "It's a tie"}
+                </button>
+                {tieMode && selected.length >= 2 && (
                   <button
-                    onClick={confirmElimination}
-                    disabled={selected.length === 0 || (tieMode && selected.length < 2)}
-                    className="tap-target rounded-lg bg-accent px-4 py-2 font-medium text-black disabled:opacity-40"
+                    onClick={() => {
+                      setTiedIds([...selected]);
+                      setSelected([]);
+                      setTieMode(false);
+                    }}
+                    className="btn-secondary w-full"
                   >
-                    {tieMode ? "Resolve Tie (random among tied)" : "Confirm Elimination"}
+                    Start Tie Face-off
                   </button>
-                </div>
+                )}
+                <button
+                  onClick={confirmElimination}
+                  disabled={selected.length === 0 || (tieMode && selected.length < 2)}
+                  className="btn-primary w-full"
+                  aria-disabled={selected.length === 0 || (tieMode && selected.length < 2)}
+                >
+                  {tieMode ? "Resolve Tie (random among tied)" : "Confirm Elimination"}
+                </button>
               </div>
             ) : (
-              <div className="flex justify-end">
+              <div className="action-bar">
                 <button
                   onClick={confirmElimination}
                   disabled={selected.length === 0}
-                  className="tap-target rounded-lg bg-accent px-4 py-2 font-medium text-black disabled:opacity-40"
+                  className="btn-primary w-full"
+                  aria-disabled={selected.length === 0}
                 >
                   Confirm Elimination
                 </button>
@@ -605,9 +627,9 @@ export default function PlayPage() {
               })()}
             </div>
             <div className="text-xs text-muted-foreground">Remaining: {alivePlayers.map((p) => p.name).join(", ")}</div>
-            <button onClick={eliminatedContinue} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
-              Continue
-            </button>
+            <div className="action-bar">
+              <button onClick={eliminatedContinue} className="btn-primary w-full">Continue</button>
+            </div>
           </div>
         )}
 
@@ -630,18 +652,40 @@ export default function PlayPage() {
                 placeholder="Type the civilians' word"
                 className="w-full rounded-md bg-background border border-white/10 p-3 outline-none focus:ring-2 focus:ring-[--ring]"
               />
-              <button onClick={submitGuess} className="tap-target w-full rounded-md bg-accent px-4 py-2 font-medium text-black">
-                Submit
-              </button>
+              <div className="h-10" />
+              <div className="action-bar">
+                <button onClick={submitGuess} className="btn-primary w-full">Submit</button>
+              </div>
             </div>
           </div>
         )}
 
         {view === "win" && (
           <div className="space-y-4 text-center">
-            <h1 className="heading text-3xl">
+            <h1
+              className={`heading text-4xl font-semibold ${
+                state.winners?.group === "CIVILIANS"
+                  ? "text-green-300"
+                  : state.winners?.group === "MR_WHITE"
+                  ? "text-yellow-300"
+                  : "text-red-300"
+              } confetti`}
+            >
               {state.winners?.group === "CIVILIANS" ? "Civilians Win!" : state.winners?.group === "MR_WHITE" ? "Mr. White Wins!" : "Infiltrators Win!"}
             </h1>
+            <div className="card p-4">
+              <div className="heading text-base">Words</div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                <div className="word-card civilian rounded-md px-3 py-2">
+                  <div className="text-muted-foreground text-xs">Civilian</div>
+                  <div className="heading">{state.civilianWord}</div>
+                </div>
+                <div className="word-card undercover rounded-md px-3 py-2">
+                  <div className="text-muted-foreground text-xs">Undercover</div>
+                  <div className="heading">{state.undercoverWord}</div>
+                </div>
+              </div>
+            </div>
             <div className="card p-4 space-y-2">
               <h2 className="heading text-lg">Winners</h2>
               <ul className="space-y-1">
@@ -678,13 +722,9 @@ export default function PlayPage() {
                 })}
               </ul>
             </div>
-            <div className="grid grid-cols-1 gap-2">
-              <button onClick={playAgain} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
-                Play Again
-              </button>
-              <button onClick={toLeaderboard} className="tap-target w-full rounded-lg border border-accent/40 px-4 py-3 font-medium">
-                Leaderboard
-              </button>
+            <div className="action-bar">
+              <button onClick={playAgain} className="btn-primary w-full">Play Again</button>
+              <button onClick={toLeaderboard} className="btn-secondary w-full">Leaderboard</button>
             </div>
           </div>
         )}

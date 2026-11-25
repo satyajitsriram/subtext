@@ -12,7 +12,7 @@ async function saveShot(page, name: string) {
 test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ page }) => {
   await page.goto("/play");
   await page.evaluate(() => localStorage.clear());
-  await expect(page.getByText("Subtext")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Start|Continue|Deal Words/ })).toBeVisible();
   await saveShot(page, "home-real");
   // Also save canonical names for the final artifact set
   await saveShot(page, "home");
@@ -29,7 +29,7 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
     const input = page.getByPlaceholder("Enter player name");
     await expect(input).toBeVisible();
     await input.fill(name);
-    await page.getByRole("button", { name: "Add" }).click();
+    await input.press("Enter");
   };
   for (const n of ["Alice", "Bob", "Carol", "Dave", "Erin"]) await addName(n);
   await page.getByRole("button", { name: "Continue to Setup" }).click();
@@ -51,6 +51,7 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   const flip = page.locator("button.flip").first();
   await flip.click();
   await page.locator(".flip-inner[data-open=\"true\"]").first().waitFor({ state: "attached", timeout: 2000 });
+  await page.waitForTimeout(150); // let animation fully settle
   // Assert the revealed content actually includes the assigned word or Mr. White
   const visibleText = await page.locator("button.flip .flip-back").first().innerText();
   const secret = await page.evaluate(() => {
@@ -76,6 +77,8 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
     await flip.click(); // hide
     await page.getByRole("button", { name: "Next Player" }).click();
     await page.locator("button.flip").first().click(); // reveal
+    await page.locator(".flip-inner[data-open=\"true\"]").first().waitFor({ state: "attached", timeout: 2000 });
+    await page.waitForTimeout(120);
   }
   // If we're on Mr. White, capture it
   const mwText = await page.locator("button.flip .flip-back").first().innerText();

@@ -3,40 +3,30 @@ import { BrandMark } from "@/components/Brand";
 
 export default function Home() {
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center px-6 py-10">
-      <div className="w-full max-w-md space-y-8">
+    <main className="relative min-h-[100dvh] px-6 pt-12 pb-[120px]">
+      <div className="mx-auto w-full max-w-md">
         <header className="text-center">
-          <div className="mb-2 flex justify-center">
-            <BrandMark size={56} />
+          <div className="mx-auto mb-4 mt-6 w-[220px] h-[220px] relative">
+            <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%),repeating-linear-gradient(135deg,rgba(255,255,255,0.03)_0_8px,rgba(0,0,0,0.02)_8px_16px),linear-gradient(180deg,var(--surface),var(--muted-surface))] shadow-[0_18px_40px_rgba(0,0,0,0.45)] border border-white/10" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BrandMark size={136} />
+            </div>
           </div>
-          <h1 className="heading text-4xl font-semibold text-foreground">Subtext</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Pass-and-play social deduction word game</p>
+          <h1 className="heading text-5xl font-semibold text-foreground tracking-wide">Subtext</h1>
+          <p className="mt-3 text-base text-muted-foreground">A sleek pass‑and‑play social deduction word game</p>
         </header>
-        <div className="card p-6 space-y-4">
-          <Link href="/play" className="tap-target block w-full rounded-lg bg-accent px-4 py-3 text-center font-medium text-black active:opacity-90">
-            Play Now
-          </Link>
-          <Link href="/players" className="tap-target block w-full rounded-lg bg-accent px-4 py-3 text-center font-medium text-black active:opacity-90">
-            Manage Players
-          </Link>
-          <Link href="/setup" className="tap-target block w-full rounded-lg border border-accent/40 px-4 py-3 text-center font-medium text-foreground hover:bg-accent/10 active:opacity-90">
-            New Game
-          </Link>
-          <div className="pt-2 text-center text-xs text-muted-foreground">
-            Offline-ready • Add to Home Screen • No ads, no tracking
+        <section className="mt-6 grid gap-3">
+          <div className="card p-4 text-sm text-foreground/90">
+            <p>Gather your friends, pass the phone, reveal your secret word, and outwit the infiltrators.</p>
           </div>
-        </div>
-        <nav className="text-center space-x-4">
-          <Link href="/leaderboard" className="text-sm underline underline-offset-4 text-foreground/90">
-            Leaderboard
-          </Link>
-          <Link href="/rules" className="text-sm underline underline-offset-4 text-foreground/70">
-            Rules
-          </Link>
-          <Link href="/words" className="text-sm underline underline-offset-4 text-foreground/70">
-            Custom Words
-          </Link>
-        </nav>
+          <nav className="grid gap-2">
+            <Link href="/leaderboard" className="btn-secondary text-center">Leaderboard</Link>
+            <Link href="/rules" className="btn-secondary text-center">How to play</Link>
+          </nav>
+        </section>
+      </div>
+      <div className="action-bar">
+        <Link href="/play" className="btn-primary text-center">Start</Link>
       </div>
     </main>
   );

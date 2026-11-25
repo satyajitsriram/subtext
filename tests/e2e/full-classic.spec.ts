@@ -12,7 +12,8 @@ async function saveShot(page, name: string) {
 async function gotoPlay(page) {
   await page.goto("/play?e2e=1");
   await page.evaluate(() => localStorage.clear());
-  await expect(page.getByText("Subtext")).toBeVisible();
+  // Start button on the first card
+  await expect(page.getByRole("button", { name: /Start|Players|Continue|Deal Words/ })).toBeVisible();
   // Home shot
   await saveShot(page, "home");
 }
@@ -30,7 +31,7 @@ async function addPlayers(page) {
     const input = page.getByPlaceholder("Enter player name");
     if (await input.isVisible().catch(() => false)) {
       await input.fill(name);
-      await page.getByRole("button", { name: "Add" }).click();
+      await input.press("Enter");
     }
   };
   for (const n of ["Alice", "Bob", "Carol", "Dave", "Erin"]) await add(n);
@@ -198,7 +199,9 @@ test("Game C: Infiltrators win (reduce to one civilian)", async ({ page }) => {
   // Force a tie face-off in the first round
   await expect(page.getByRole("heading", { name: "Round" })).toBeVisible();
   await page.getByRole("button", { name: "Proceed to Voting" }).click();
-  await page.getByText("Mark tie").click();
+  // Toggle tie mode (styled button)
+  const tieBtn = page.getByRole("button", { name: /It's a tie|Tie mode/ });
+  await tieBtn.click();
   const twoNames = await page.evaluate(() => {
     const st = JSON.parse(localStorage.getItem("subtext_state")!);
     const alive = st.players.filter((p: any) => st.alivePlayerIds.includes(p.id));

@@ -221,12 +221,7 @@ body {
 }
 
 /* Sticky thumb-zone bar for primary actions */
-.thumb-bar {
-  position: sticky;
-  bottom: calc(var(--safe-bottom) + 8px);
-  z-index: 10;
-  margin-top: 8px;
-}
+.thumb-bar { display: none; } /* replaced with action-bar */
 
 /* Stamp-style elimination reveal */
 @keyframes stamp {
@@ -245,3 +240,76 @@ body {
   animation: stamp 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   user-select: none;
 }
+
+/* Fixed bottom action bar (thumb zone) */
+.action-bar {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(var(--safe-bottom) + 10px);
+  z-index: 30;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(11,15,20,0.75) 30%, rgba(11,15,20,0.95) 100%);
+  padding: 12px;
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px) saturate(120%);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(180deg, #f8d23a, #e0b211 60%, #b7890f);
+  color: #0b0f14;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(224,178,17,0.35), 0 2px 0 rgba(0,0,0,0.6) inset;
+}
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled {
+  background: linear-gradient(180deg, #6b6540, #5a532f);
+  color: rgba(255,255,255,0.55);
+  box-shadow: none;
+  opacity: 0.7;
+}
+.btn-secondary {
+  border: 1px solid rgba(224,178,17,0.4);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--foreground);
+  background: rgba(255,255,255,0.02);
+}
+.btn-toggle-on {
+  border-color: rgba(224,178,17,0.85);
+  background: rgba(224,178,17,0.12);
+}
+
+/* Voting selection check */
+.vote-card {
+  position: relative;
+  transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+}
+.vote-card.active {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(224,178,17,0.18);
+}
+.vote-card .check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #0b0f14;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+.vote-card.active .check { display: inline-flex; }
