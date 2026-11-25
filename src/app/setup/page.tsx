@@ -59,25 +59,57 @@ export default function SetupPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-muted-foreground">Undercovers</label>
-              <input
-                type="number"
-                min={0}
-                max={Math.max(0, n - 1)}
-                className="mt-1 w-full rounded-md bg-background border border-white/10 p-2"
-                value={state.settings.numUndercovers}
-                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { numUndercovers: Math.max(0, Math.min(n - 1, Number(e.target.value) || 0)) } })}
-              />
+              <div className="mt-1 flex items-center gap-2">
+                <button
+                  aria-label="Decrease Undercovers"
+                  className="rounded-md border border-white/10 px-3 py-2"
+                  onClick={() => dispatch({ type: "UPDATE_SETTINGS", settings: { numUndercovers: Math.max(0, state.settings.numUndercovers - 1) } })}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  max={Math.max(0, n - 1)}
+                  className="w-full rounded-md bg-background border border-white/10 p-2"
+                  value={state.settings.numUndercovers}
+                  onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { numUndercovers: Math.max(0, Math.min(n - 1, Number(e.target.value) || 0)) } })}
+                />
+                <button
+                  aria-label="Increase Undercovers"
+                  className="rounded-md border border-white/10 px-3 py-2"
+                  onClick={() => dispatch({ type: "UPDATE_SETTINGS", settings: { numUndercovers: Math.min(Math.max(0, n - 1), state.settings.numUndercovers + 1) } })}
+                >
+                  +
+                </button>
+              </div>
             </div>
             <div>
               <label className="text-sm text-muted-foreground">Mr. Whites</label>
-              <input
-                type="number"
-                min={0}
-                max={Math.max(0, n - 1)}
-                className="mt-1 w-full rounded-md bg-background border border-white/10 p-2"
-                value={state.settings.numMrWhites}
-                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { numMrWhites: Math.max(0, Math.min(n - 1, Number(e.target.value) || 0)) } })}
-              />
+              <div className="mt-1 flex items-center gap-2">
+                <button
+                  aria-label="Decrease Mr. Whites"
+                  className="rounded-md border border-white/10 px-3 py-2"
+                  onClick={() => dispatch({ type: "UPDATE_SETTINGS", settings: { numMrWhites: Math.max(0, state.settings.numMrWhites - 1) } })}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  max={Math.max(0, n - 1)}
+                  className="w-full rounded-md bg-background border border-white/10 p-2"
+                  value={state.settings.numMrWhites}
+                  onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { numMrWhites: Math.max(0, Math.min(n - 1, Number(e.target.value) || 0)) } })}
+                />
+                <button
+                  aria-label="Increase Mr. Whites"
+                  className="rounded-md border border-white/10 px-3 py-2"
+                  onClick={() => dispatch({ type: "UPDATE_SETTINGS", settings: { numMrWhites: Math.min(Math.max(0, n - 1), state.settings.numMrWhites + 1) } })}
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
           <p className="text-xs text-muted-foreground">

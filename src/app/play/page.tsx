@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useGame } from "@/lib/state";
 import { eliminatePlayer, beginRound, checkVictory, isLooseMatch, startNewGame } from "@/lib/engine";
 import { WORD_PAIRS_ALL } from "@/data/word-pairs";
+import { Avatar } from "@/components/Avatar";
 
 type View =
   | "players"
@@ -381,9 +382,10 @@ export default function PlayPage() {
               </div>
               <ol className="space-y-2">
                 {state.rounds[state.rounds.length - 1]?.speakingOrder.map((pid: string, i: number) => (
-                  <li key={pid} className="rounded bg-muted-surface px-3 py-2">
+                  <li key={pid} className="rounded bg-muted-surface px-3 py-2 flex items-center gap-2">
                     <span className="mr-2 text-muted-foreground">{i + 1}.</span>
-                    {state.players.find((p) => p.id === pid)?.name}
+                    <Avatar name={state.players.find((p) => p.id === pid)?.name || "?"} />
+                    <span>{state.players.find((p) => p.id === pid)?.name}</span>
                   </li>
                 ))}
               </ol>
@@ -412,6 +414,7 @@ export default function PlayPage() {
                     onClick={() => toggleVote(p.id)}
                     className={`rounded-lg border p-4 text-center ${active ? "border-danger bg-danger/20" : "border-white/10 bg-muted-surface"}`}
                   >
+                    <div className="mb-1"><Avatar name={p.name} /></div>
                     <div className="heading">{p.name}</div>
                   </button>
                 );
