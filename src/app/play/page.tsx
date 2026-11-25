@@ -236,7 +236,7 @@ export default function PlayPage() {
                 </button>
               </div>
             </div>
-            <ol className="max-h-[50vh] overflow-y-auto pr-1 space-y-2">
+            <ol className="max-h-[calc(100dvh-260px)] overflow-y-auto pr-1 space-y-2 pb-28">
               {state.players.map((p) => (
                 <li key={p.id} className="flex items-center justify-between rounded-md border border-white/10 px-3 py-2 bg-muted-surface/40">
                   <div className="flex items-center gap-2">
@@ -631,7 +631,9 @@ export default function PlayPage() {
                       {role === "CIVILIAN" ? "Civilian" : role === "UNDERCOVER" ? "Undercover" : "Mr. White"}
                     </div>
                     <div className="mt-4">
-                      <span className="stamp">{role === "UNDERCOVER" ? "Undercover" : role === "CIVILIAN" ? "Civilian" : "Mr. White"}</span>
+                      <span className={`stamp ${role === "UNDERCOVER" ? "stamp--undercover" : role === "CIVILIAN" ? "stamp--civilian" : "stamp--mrwhite"}`}>
+                        {role === "UNDERCOVER" ? "Undercover" : role === "CIVILIAN" ? "Civilian" : "Mr. White"}
+                      </span>
                     </div>
                   </>
                 );
@@ -645,7 +647,7 @@ export default function PlayPage() {
         )}
 
         {view === "mrwhite" && (
-          <div className="space-y-3">
+          <div className="min-h-[calc(100dvh-150px)] flex flex-col justify-center gap-3">
             <div className="text-center">
               <h2 className="heading text-lg">Mr. White Guess</h2>
               <p className="text-xs text-muted-foreground">
@@ -663,6 +665,7 @@ export default function PlayPage() {
                 placeholder="Type the civilians' word"
                 className="w-full rounded-md bg-background border border-white/10 p-3 outline-none focus:ring-2 focus:ring-[--ring]"
               />
+              <p className="text-xs text-muted-foreground text-center">If you guess the Civilians’ word exactly, you win.</p>
               <div className="h-10" />
               <div className="action-bar">
                 <button onClick={submitGuess} className="btn-primary w-full">Submit</button>
@@ -741,22 +744,30 @@ export default function PlayPage() {
         )}
 
         {view === "leaderboard" && (
-          <div className="space-y-3">
+          <div className="min-h-[calc(100dvh-150px)] flex flex-col justify-center gap-3">
             <div className="text-center">
               <h2 className="heading text-lg">Leaderboard</h2>
             </div>
             <div className="card p-4">
               <ol className="space-y-2">
-                {[...state.players].sort((a, b) => b.score - a.score).map((p, i) => (
-                  <li key={p.id} className="flex items-center justify-between rounded bg-muted-surface px-3 py-2">
-                    <div>
-                      <span className="mr-2 text-muted-foreground">#{i + 1}</span>
-                      <span className="heading">{p.name}</span>
-                    </div>
-                    <div className="text-sm">{p.score}</div>
-                  </li>
-                ))}
+                {[...state.players].sort((a, b) => b.score - a.score).map((p, i) => {
+                  const top = i === 0;
+                  return (
+                    <li key={p.id} className={`flex items-center justify-between rounded px-3 py-2 ${top ? "bg-[rgba(224,178,17,0.12)] border border-[rgba(224,178,17,0.5)]" : "bg-muted-surface border border-white/10"}`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`mr-1 ${top ? "text-accent" : "text-muted-foreground"}`}>#{i + 1}</span>
+                        <Avatar name={p.name} />
+                        <span className="heading">{p.name}</span>
+                      </div>
+                      <div className="text-sm">{p.score}</div>
+                    </li>
+                  );
+                })}
               </ol>
+            </div>
+            <div className="action-bar">
+              <button onClick={() => setView("setup")} className="btn-primary w-full">New game</button>
+              <button onClick={() => setView("home")} className="btn-secondary w-full">Back</button>
             </div>
           </div>
         )}
