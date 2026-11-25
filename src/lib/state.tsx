@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
-import { GameSettings, GameState, Player, TieBreaker } from "./types";
+import { GameSettings, GameState, Player, TieBreaker, SpecialRolesConfig } from "./types";
 import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { applyVictoryScoring, beginRound, castVotes, checkVictory, eliminatePlayer, initPlayersFromNames, isLooseMatch, mrWhiteGuessVictory, startNewGame } from "./engine";
 
@@ -15,6 +15,9 @@ type Action =
   | { type: "SET_TIE_MODE"; mode: TieBreaker }
   | { type: "ELIMINATE"; playerId: string }
   | { type: "SET_STATUS"; status: GameState["status"] }
+  | { type: "START_FACEOFF"; playerIds: string[] }
+  | { type: "GODDESS_DECIDE"; playerId: string }
+  | { type: "MARK_BOOMERANG_USED" }
   | { type: "RESTART_SAME_PLAYERS" }
   | { type: "RESET_ALL" }
   | { type: "ADD_CUSTOM_PAIR"; a: string; b: string; category?: string; difficulty?: GameSettings["difficulties"][number] }
@@ -30,6 +33,17 @@ const defaultSettings: GameSettings = {
   includeSpicy: false,
   categories: [],
   difficulties: ["easy", "medium", "hard"],
+  specials: {
+    goddessOfJustice: false,
+    lovers: false,
+    mrMeme: false,
+    revenger: false,
+    duelists: false,
+    ghost: false,
+    falafelVendor: false,
+    boomerang: false,
+    joyFool: false,
+  },
 };
 
 const initialState: GameState = {
@@ -78,6 +92,18 @@ function reducer(state: GameState, action: Action): GameState {
     case "START_ROUND": {
       return beginRound(state);
     }
+    case "START_FACEOFF": {
+      const rounds = state.rounds.slice();
+      if (rounds.length > 0) {
+        rounds[rounds.length - 1] = { ...rounds[rounds.length - 1], faceOffIds: action.playerIds };
+      }
+      return { ...state, rounds, status: "faceoff" };
+    }
+    case "GODDESS_DECIDE": {
+      // Eliminate chosen by Goddess
+      const next = eliminatePlayer(state, action.playerId);
+      return { ...next, status: "voting" };
+    }
     case "SET_TIE_MODE":
       return { ...state, settings: { ...state.settings, tieBreaker: action.mode } };
     case "ELIMINATE": {
@@ -85,6 +111,8 @@ function reducer(state: GameState, action: Action): GameState {
     }
     case "SET_STATUS":
       return { ...state, status: action.status };
+    case "MARK_BOOMERANG_USED":
+      return { ...state, specials: { ...state.specials, boomerangUsed: true } };
     case "RESTART_SAME_PLAYERS": {
       // keep players & scores, start new game with next word
       const restarted = startNewGame(state.players, state.settings, WORD_PAIRS, state.usedWordIndices);

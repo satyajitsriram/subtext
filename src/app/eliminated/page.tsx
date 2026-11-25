@@ -18,9 +18,9 @@ export default function EliminatedRevealPage() {
 
   return (
     <main className="min-h-[100dvh] px-4 py-6">
-      <div className="mx-auto max-w-md space-y-6 text-center">
+      <div className="mx-auto max-w-md space-y-6 text-center animate-pop">
         <h1 className="heading text-2xl">Eliminated</h1>
-        <div className="card p-6">
+        <div className="card p-6 animate-pulse-fade">
           <div className="heading text-xl">{player?.name}</div>
           <div className="mt-2 text-sm text-muted-foreground">was</div>
           <div className="mt-2 text-2xl font-semibold">{role === "CIVILIAN" ? "Civilian" : role === "UNDERCOVER" ? "Undercover" : "Mr. White"}</div>

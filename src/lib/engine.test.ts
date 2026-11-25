@@ -10,6 +10,8 @@ import {
   startNewGame,
   applyVictoryScoring,
   eliminatePlayer,
+  beginRound,
+  mrWhiteGuessVictory,
 } from "./engine";
 import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { GameSettings } from "./types";
@@ -23,6 +25,17 @@ const baseSettings: GameSettings = {
   includeSpicy: false,
   categories: [],
   difficulties: ["easy", "medium", "hard"],
+  specials: {
+    goddessOfJustice: false,
+    lovers: false,
+    mrMeme: false,
+    revenger: false,
+    duelists: false,
+    ghost: false,
+    falafelVendor: false,
+    boomerang: false,
+    joyFool: false,
+  },
 };
 
 describe("engine", () => {
@@ -53,6 +66,15 @@ describe("engine", () => {
     expect(isLooseMatch("Pineapple", "pine apples")).toBe(true);
     expect(isLooseMatch("tomatoes", "tomato")).toBe(true);
     expect(isLooseMatch("tortoise", "tortiose")).toBe(true);
+  });
+
+  it("speaking order includes only alive players", () => {
+    const players = initPlayersFromNames(["A", "B", "C", "D"]);
+    const st = startNewGame(players, { ...baseSettings, numUndercovers: 1, numMrWhites: 0 }, WORD_PAIRS_ALL, [], () => 0.4);
+    const s2 = { ...st, status: "in_round" as const };
+    const roundState = beginRound(s2);
+    const last = roundState.rounds[roundState.rounds.length - 1];
+    expect(last.speakingOrder.every((id: string) => s2.alivePlayerIds.includes(id))).toBe(true);
   });
 
   it("civilian victory when no infiltrators remain", () => {
@@ -98,5 +120,45 @@ describe("engine", () => {
     expect(u.score).toBe(10);
     expect(w.score).toBe(6);
     expect(c.score).toBe(0);
+  });
+
+  it("lovers elimination cascades; duelists scoring; joy fool bonus", () => {
+    const players = initPlayersFromNames(["A", "B", "C", "D", "E"]);
+    let st = startNewGame(
+      players,
+      { ...baseSettings, numUndercovers: 1, numMrWhites: 0, specials: { ...baseSettings.specials, lovers: true, duelists: true, joyFool: true } },
+      WORD_PAIRS_ALL,
+      [],
+      () => 0.12
+    );
+    const lovers = st.specials?.loversPair!;
+    const duel = st.specials?.duelistsPair!;
+    const joy = st.specials?.joyFoolId!;
+    // First eliminate joy fool: +4
+    st = eliminatePlayer(st, joy);
+    const joyP = st.players.find((p) => p.id === joy)!;
+    expect(joyP.score).toBe(4);
+    // Eliminate one lover cascades to both dead
+    const l0 = lovers[0];
+    const aliveBefore = new Set(st.alivePlayerIds);
+    st = eliminatePlayer(st, l0);
+    expect(aliveBefore.has(lovers[1])).toBe(true);
+    expect(st.alivePlayerIds.includes(lovers[1])).toBe(false);
+    // Duelists scoring applies when one of the pair is eliminated
+    const d0 = duel[0];
+    const d1 = duel[1];
+    const beforeD0 = st.players.find((p) => p.id === d0)!.score;
+    const beforeD1 = st.players.find((p) => p.id === d1)!.score;
+    st = eliminatePlayer(st, d0);
+    expect(st.players.find((p) => p.id === d0)!.score).toBe(beforeD0 - 2);
+    expect(st.players.find((p) => p.id === d1)!.score).toBe(beforeD1 + 2);
+  });
+
+  it("mr white guess immediate win edge case", () => {
+    const players = initPlayersFromNames(["A", "B", "C", "D"]);
+    let st = startNewGame(players, { ...baseSettings, numUndercovers: 1, numMrWhites: 1 }, WORD_PAIRS_ALL, [], () => 0.45);
+    // No matter if other infiltrators remain, correct guess wins
+    const cw = st.civilianWord!;
+    expect(mrWhiteGuessVictory(st, cw)).toBe(true);
   });
 });

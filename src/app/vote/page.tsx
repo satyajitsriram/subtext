@@ -36,18 +36,40 @@ export default function VotePage() {
         }
         checkAndFinishVictory();
         return;
+      } else if (state.settings.specials.goddessOfJustice) {
+        dispatch({ type: "START_FACEOFF", playerIds: selectedIds });
+        router.push("/goddess");
+        return;
       } else if (state.settings.tieBreaker === "manual" || state.settings.tieBreaker === "revote") {
         // After tie face-off or manual resolution, group selects one:
-        alert("After extra clues or manual tie-break, tap the eliminated player.");
-        setTieMode(false);
+        if (state.settings.tieBreaker === "revote") {
+          dispatch({ type: "START_FACEOFF", playerIds: selectedIds });
+          router.push("/faceoff");
+        } else {
+          alert("After manual tie-break (e.g. rock-paper-scissors), tap the eliminated player among the tied.");
+          setTieMode(false);
+        }
         return;
       }
     } else {
       const id = selectedIds[0];
+      // Check Boomerang
+      if (state.settings.specials.boomerang && state.specials?.boomerangId === id && !state.specials?.boomerangUsed) {
+        // Route to boomerang bounce selection
+        const round = state.rounds[state.rounds.length - 1];
+        // Populate faceOffIds as 'potential voters' (approximate: all others)
+        const others = state.alivePlayerIds.filter((x) => x !== id);
+        dispatch({ type: "START_FACEOFF", playerIds: others });
+        router.push("/boomerang");
+        return;
+      }
       dispatch({ type: "ELIMINATE", playerId: id });
       const isMrWhite = roleMap.get(id) === "MR_WHITE";
+      const isRevenger = state.settings.specials.revenger && state.specials?.revengerId === id;
       if (isMrWhite) {
         router.push("/mrwhite");
+      } else if (isRevenger) {
+        router.push("/revenger");
       } else {
         if (state.settings.revealOnElimination) {
           router.push("/eliminated");

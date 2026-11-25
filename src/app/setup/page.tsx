@@ -131,6 +131,88 @@ export default function SetupPage() {
           </div>
         </div>
 
+        <div className="card p-4 space-y-3">
+          <h2 className="heading text-lg">Special Roles</h2>
+          <div className="grid grid-cols-1 gap-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={state.settings.specials.goddessOfJustice}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, goddessOfJustice: e.target.checked } } })}
+              />
+              <span className="text-sm">Goddess of Justice (breaks ties, even if eliminated)</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                disabled={n < 5}
+                checked={state.settings.specials.lovers}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, lovers: e.target.checked } } })}
+              />
+              <span className="text-sm">Lovers (pair; eliminating one eliminates the other){n < 5 ? " — need 5+" : ""}</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={state.settings.specials.mrMeme}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, mrMeme: e.target.checked } } })}
+              />
+              <span className="text-sm">Mr. Meme (one random player gestures only each round)</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                disabled={n < 5}
+                checked={state.settings.specials.revenger}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, revenger: e.target.checked } } })}
+              />
+              <span className="text-sm">Revenger (when eliminated, also eliminates someone){n < 5 ? " — need 5+" : ""}</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                disabled={n < 5}
+                checked={state.settings.specials.duelists}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, duelists: e.target.checked } } })}
+              />
+              <span className="text-sm">Duelists (pair; first out −2 pts, other +2 pts){n < 5 ? " — need 5+" : ""}</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={state.settings.specials.ghost}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, ghost: e.target.checked } } })}
+              />
+              <span className="text-sm">Ghost (eliminated players can still vote)</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                disabled={n < 4}
+                checked={state.settings.specials.falafelVendor}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, falafelVendor: e.target.checked } } })}
+              />
+              <span className="text-sm">Falafel Vendor (gives protect/sabotage each round){n < 4 ? " — need 4+" : ""}</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={state.settings.specials.boomerang}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, boomerang: e.target.checked } } })}
+              />
+              <span className="text-sm">Boomerang (first majority vote bounces back to voters)</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={state.settings.specials.joyFool}
+                onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { specials: { ...state.settings.specials, joyFool: e.target.checked } } })}
+              />
+              <span className="text-sm">Joy Fool (if first eliminated, +4 pts)</span>
+            </label>
+          </div>
+        </div>
+
         <button
           onClick={() => {
             try {

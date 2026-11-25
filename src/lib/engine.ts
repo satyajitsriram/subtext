@@ -97,6 +97,45 @@ export function startNewGame(
   const { index, civilianWord, undercoverWord } = pickWordPair(words, prevUsed, settings, rnd);
   const alive = players.map((p) => p.id);
   const mrWhiteAlive = assigned.some((r) => r.role === "MR_WHITE");
+  // Special assignments
+  const ids = shuffleArray(alive, rnd);
+  const bag = ids.slice();
+  const takeOne = () => bag.shift();
+  const takePair = () => {
+    const a = bag.shift();
+    const b = bag.shift();
+    if (a && b) return [a, b] as [string, string];
+    return undefined;
+  };
+  const specials: any = {};
+  if (settings.specials.goddessOfJustice) {
+    const g = takeOne();
+    if (g) specials.goddessId = g;
+  }
+  if (settings.specials.lovers && players.length >= 5) {
+    const lp = takePair();
+    if (lp) specials.loversPair = lp;
+  }
+  if (settings.specials.duelists && players.length >= 5) {
+    const dp = takePair();
+    if (dp) specials.duelistsPair = dp;
+  }
+  if (settings.specials.revenger && players.length >= 5) {
+    const r = takeOne();
+    if (r) specials.revengerId = r;
+  }
+  if (settings.specials.falafelVendor && players.length >= 4) {
+    const v = takeOne();
+    if (v) specials.falafelVendorId = v;
+  }
+  if (settings.specials.boomerang) {
+    const b = takeOne();
+    if (b) specials.boomerangId = b;
+  }
+  if (settings.specials.joyFool) {
+    const j = takeOne();
+    if (j) specials.joyFoolId = j;
+  }
   return {
     players,
     alivePlayerIds: alive,
@@ -107,6 +146,7 @@ export function startNewGame(
     usedWordIndices: [...prevUsed, index],
     currentWordIndex: index,
     settings,
+    specials,
     rounds: [],
     status: "revealing",
   };
@@ -123,6 +163,10 @@ export function beginRound(state: GameState, rnd: () => number = Math.random): G
   }
   const roundNumber = state.rounds.length + 1;
   const speakingOrder = buildSpeakingOrder(state.alivePlayerIds, rnd);
+  const mrMemeId =
+    state.settings.specials.mrMeme && state.alivePlayerIds.length > 0
+      ? shuffleArray(state.alivePlayerIds, rnd)[0]
+      : undefined;
   return {
     ...state,
     rounds: [
@@ -130,6 +174,7 @@ export function beginRound(state: GameState, rnd: () => number = Math.random): G
       {
         roundNumber,
         speakingOrder,
+        mrMemeId,
       },
     ],
     status: "in_round",
@@ -140,11 +185,13 @@ export function castVotes(
   state: GameState,
   votes: Record<string, string>
 ): { topIds: string[]; counts: Record<string, number> } {
-  // Only living players' votes count
+  // Living players' votes count; if Ghost special enabled, eliminated can also vote
+  const allowGhost = !!state.settings.specials.ghost;
   const aliveSet = new Set(state.alivePlayerIds);
   const counts: Record<string, number> = {};
   for (const [voter, target] of Object.entries(votes)) {
-    if (!aliveSet.has(voter) || !aliveSet.has(target)) continue;
+    const voterIsAlive = aliveSet.has(voter);
+    if ((!voterIsAlive && !allowGhost) || !aliveSet.has(target)) continue;
     counts[target] = (counts[target] || 0) + 1;
   }
   const max = Math.max(0, ...Object.values(counts));
@@ -183,12 +230,36 @@ export function eliminatePlayer(state: GameState, playerId: string): GameState {
   if (lastRoundIndex >= 0) {
     rounds[lastRoundIndex] = { ...rounds[lastRoundIndex], eliminatedPlayerId: playerId };
   }
-  return {
+  let next: GameState = {
     ...state,
     alivePlayerIds: alive,
     mrWhiteAlive,
     rounds,
   };
+  // Special: Lovers — if one dies, the other is eliminated too (reveal lovers at that time)
+  const lovers = state.specials?.loversPair;
+  if (state.settings.specials.lovers && lovers && lovers.includes(playerId)) {
+    const partner = lovers[0] === playerId ? lovers[1] : lovers[0];
+    if (next.alivePlayerIds.includes(partner)) {
+      next = eliminatePlayer(next, partner);
+    }
+  }
+  // Special: Duelists — first eliminated loses 2, the other gains 2
+  const duel = state.specials?.duelistsPair;
+  if (state.settings.specials.duelists && duel && duel.includes(playerId)) {
+    const other = duel[0] === playerId ? duel[1] : duel[0];
+    next = {
+      ...next,
+      players: next.players.map((p) =>
+        p.id === playerId ? { ...p, score: p.score - 2 } : p.id === other ? { ...p, score: p.score + 2 } : p
+      ),
+    };
+  }
+  // Special: Joy Fool — if first eliminated overall is joyFool, +4 points
+  if (state.settings.specials.joyFool && !state.rounds.some((r) => r.eliminatedPlayerId) && state.specials?.joyFoolId === playerId) {
+    next = { ...next, players: next.players.map((p) => (p.id === playerId ? { ...p, score: p.score + 4 } : p)) };
+  }
+  return next;
 }
 
 export function normalizeText(text: string): string {
