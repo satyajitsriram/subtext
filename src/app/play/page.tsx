@@ -265,25 +265,71 @@ export default function PlayPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm text-muted-foreground">Undercovers</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={Math.max(0, state.players.length - 1)}
-                    className="mt-1 w-full rounded-md bg-background border border-white/10 p-2"
-                    value={state.settings.numUndercovers}
-                    onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { numUndercovers: Math.max(0, Math.min(state.players.length - 1, Number(e.target.value) || 0)) } })}
-                  />
+                  <div className="mt-1 flex items-center gap-2">
+                    <button
+                      aria-label="Decrease Undercovers"
+                      className="rounded-md border border-white/15 px-3 py-2"
+                      onClick={() =>
+                        dispatch({
+                          type: "UPDATE_SETTINGS",
+                          settings: { numUndercovers: Math.max(0, state.settings.numUndercovers - 1) },
+                        })
+                      }
+                    >
+                      −
+                    </button>
+                    <div className="flex-1 text-center rounded-md bg-background border border-white/10 py-2 heading">
+                      {state.settings.numUndercovers}
+                    </div>
+                    <button
+                      aria-label="Increase Undercovers"
+                      className="rounded-md border border-white/15 px-3 py-2"
+                      onClick={() =>
+                        dispatch({
+                          type: "UPDATE_SETTINGS",
+                          settings: {
+                            numUndercovers: Math.min(state.players.length - 1, state.settings.numUndercovers + 1),
+                          },
+                        })
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground">Mr. Whites</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={Math.max(0, state.players.length - 1)}
-                    className="mt-1 w-full rounded-md bg-background border border-white/10 p-2"
-                    value={state.settings.numMrWhites}
-                    onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { numMrWhites: Math.max(0, Math.min(state.players.length - 1, Number(e.target.value) || 0)) } })}
-                  />
+                  <div className="mt-1 flex items-center gap-2">
+                    <button
+                      aria-label="Decrease Mr. Whites"
+                      className="rounded-md border border-white/15 px-3 py-2"
+                      onClick={() =>
+                        dispatch({
+                          type: "UPDATE_SETTINGS",
+                          settings: { numMrWhites: Math.max(0, state.settings.numMrWhites - 1) },
+                        })
+                      }
+                    >
+                      −
+                    </button>
+                    <div className="flex-1 text-center rounded-md bg-background border border-white/10 py-2 heading">
+                      {state.settings.numMrWhites}
+                    </div>
+                    <button
+                      aria-label="Increase Mr. Whites"
+                      className="rounded-md border border-white/15 px-3 py-2"
+                      onClick={() =>
+                        dispatch({
+                          type: "UPDATE_SETTINGS",
+                          settings: {
+                            numMrWhites: Math.min(state.players.length - 1, state.settings.numMrWhites + 1),
+                          },
+                        })
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -334,10 +380,16 @@ export default function PlayPage() {
                             <div className="text-xs text-muted-foreground">Tap to reveal</div>
                           </div>
                         </div>
-                        <div className="flip-back absolute inset-0 flex items-center justify-center p-3">
+                        <div className={`flip-back absolute inset-0 flex items-center justify-center p-3`}>
                           <div className="text-center">
                             <div className="heading text-lg">{p.name}</div>
-                            <div className="mt-1 rounded bg-background/60 px-2 py-1 text-sm">{secret}</div>
+                            <div
+                              className={`mt-2 rounded-md px-3 py-2 word-text word-card ${
+                                role === "MR_WHITE" ? "mrwhite" : role === "CIVILIAN" ? "civilian" : "undercover"
+                              }`}
+                            >
+                              {secret}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -392,7 +444,13 @@ export default function PlayPage() {
                         <div className="flip-back absolute inset-0 flex items-center justify-center p-3">
                           <div className="text-center">
                             <div className="heading text-lg">{p?.name}</div>
-                            <div className="mt-1 rounded bg-background/60 px-2 py-1 text-sm">{secret}</div>
+                            <div
+                              className={`mt-2 rounded-md px-3 py-2 word-text word-card ${
+                                role === "MR_WHITE" ? "mrwhite" : role === "CIVILIAN" ? "civilian" : "undercover"
+                              }`}
+                            >
+                              {secret}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -403,24 +461,26 @@ export default function PlayPage() {
                       </div>
                       <div>{state.settings.allowRecheckWord ? "Re-check enabled" : "No re-checks"}</div>
                     </div>
-                    {revealIndex + 1 < state.players.length ? (
-                      <button
-                        disabled={!pid || isOpen || !hasRevealed[pid]}
-                        onClick={() => {
-                          const next = revealIndex + 1;
-                          setRevealIndex(next);
-                          setIsOpen(false);
-                        }}
-                        className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
-                      >
-                        Next Player
-                      </button>
-                    ) : null}
-                    {revealIndex + 1 >= state.players.length ? (
-                      <button disabled={!state.players.every((pl) => hasRevealed[pl.id])} onClick={startRound} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40">
-                        Start Round
-                      </button>
-                    ) : null}
+                    <div className="thumb-bar">
+                      {revealIndex + 1 < state.players.length ? (
+                        <button
+                          disabled={!pid || isOpen || !hasRevealed[pid]}
+                          onClick={() => {
+                            const next = revealIndex + 1;
+                            setRevealIndex(next);
+                            setIsOpen(false);
+                          }}
+                          className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
+                        >
+                          Next Player
+                        </button>
+                      ) : null}
+                      {revealIndex + 1 >= state.players.length ? (
+                        <button disabled={!state.players.every((pl) => hasRevealed[pl.id])} onClick={startRound} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40">
+                          Start Round
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 );
               })()
@@ -449,9 +509,11 @@ export default function PlayPage() {
               </ol>
             </div>
             <div className="text-xs text-muted-foreground">Remaining: {alivePlayers.map((p) => p.name).join(", ")}</div>
-            <button onClick={proceedVoting} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
-              Proceed to Voting
-            </button>
+            <div className="thumb-bar">
+              <button onClick={proceedVoting} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
+                Proceed to Voting
+              </button>
+            </div>
           </div>
         )}
 
@@ -534,6 +596,9 @@ export default function PlayPage() {
                     <div className="mt-2 text-sm text-muted-foreground">was</div>
                     <div className="mt-2 text-2xl font-semibold">
                       {role === "CIVILIAN" ? "Civilian" : role === "UNDERCOVER" ? "Undercover" : "Mr. White"}
+                    </div>
+                    <div className="mt-4">
+                      <span className="stamp">{role === "UNDERCOVER" ? "Undercover" : role === "CIVILIAN" ? "Civilian" : "Mr. White"}</span>
                     </div>
                   </>
                 );

@@ -63,9 +63,7 @@ async function addPlayers(page) {
 
 async function dealAndRevealAll(page) {
   await expect(page.getByText("Players: 5")).toBeVisible();
-  const inputs = page.locator("input[type=number]");
-  await inputs.nth(0).fill("1");
-  await inputs.nth(1).fill("1");
+  // Default settings already 1 Undercover and 1 Mr. White after redesign steppers
   await saveShot(page, "setup");
   await page.getByRole("button", { name: "Deal Words" }).click();
   await expect(page.getByRole("heading", { name: "Pass & Reveal" })).toBeVisible();

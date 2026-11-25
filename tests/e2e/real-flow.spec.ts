@@ -14,6 +14,8 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   await page.evaluate(() => localStorage.clear());
   await expect(page.getByText("Subtext")).toBeVisible();
   await saveShot(page, "home-real");
+  // Also save canonical names for the final artifact set
+  await saveShot(page, "home");
 
   // Add players one by one
   const startBtn = page.getByRole("button", { name: "Start" });
@@ -33,14 +35,17 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   await page.getByRole("button", { name: "Continue to Setup" }).click();
   await expect(page.getByRole("button", { name: "Deal Words" })).toBeVisible();
   await saveShot(page, "players-real");
+  await saveShot(page, "players");
 
   // Setup
   await saveShot(page, "setup-real");
+  await saveShot(page, "setup");
   await page.getByRole("button", { name: "Deal Words" }).click();
 
   // Reveal (pass-and-play) — no "Reveal all (test)" button visible
   await expect(page.getByRole("heading", { name: "Pass & Reveal" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Reveal all (test)" })).toHaveCount(0);
+  await saveShot(page, "pass-to");
   await saveShot(page, "pass-to");
   // Tap to reveal and capture
   const flip = page.locator("button.flip").first();
@@ -58,11 +63,32 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   });
   expect(visibleText).toContain(secret);
   await saveShot(page, "card-revealed");
+  await saveShot(page, "card-word");
+
+  // Try to capture Mr. White's card in real flow: advance to their index and reveal
+  const mrIndex = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem("subtext_state")!);
+    const roles = new Map(st.assignedRoles.map((r: any) => [r.playerId, r.role]));
+    const idx = st.players.findIndex((p: any) => roles.get(p.id) === "MR_WHITE");
+    return idx >= 0 ? idx : 0;
+  });
+  for (let i = 0; i < mrIndex; i++) {
+    await flip.click(); // hide
+    await page.getByRole("button", { name: "Next Player" }).click();
+    await page.locator("button.flip").first().click(); // reveal
+  }
+  // If we're on Mr. White, capture it
+  const mwText = await page.locator("button.flip .flip-back").first().innerText();
+  if (mwText.toLowerCase().includes("mr. white")) {
+    await saveShot(page, "card-mrwhite");
+  }
   // Hide and go next repeatedly
   await flip.click(); // hide
   await page.getByRole("button", { name: "Next Player" }).click();
-  // Quickly step through the rest
-  for (let i = 0; i < 3; i++) {
+  // Quickly step through the rest (robust against variable counts)
+  for (let i = 0; i < 10; i++) {
+    const hasNext = await page.getByRole("button", { name: /Next Player|Finish Reveal/ }).isVisible().catch(() => false);
+    if (!hasNext) break;
     await page.locator("button.flip").first().click(); // reveal
     await page.locator("button.flip").first().click(); // hide
     await page.getByRole("button", { name: /Next Player|Finish Reveal/ }).click();

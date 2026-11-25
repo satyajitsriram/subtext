@@ -23,9 +23,12 @@ Run tests
 `npm test`
 
 Deploy (Vercel)
-- Push this repo, then import it into Vercel and deploy with defaults.
-- No environment variables required.
-- PWA works offline after the first load; iOS users should “Add to Home Screen” for the best pass‑and‑play experience.
+- Import the repo in Vercel. Framework preset: Next.js.
+- Build command: `next build` (default). Output: `.vercel/output` handled automatically.
+- Node version: use 18+ (project tested on 18 and 20).
+- No env vars required. Images are `unoptimized` to simplify PWA offline.
+- PWA is enabled in production only. The manifest and icons live under `public/`.
+- iOS: add to Home Screen for a full‑screen, standalone feel. We set `apple-mobile-web-app-capable=yes`, `apple-touch-icon`, and theme color.
 
 Notes on rules parity
 - Players: 3–20. At least one infiltrator (Undercover or Mr. White).
@@ -44,4 +47,9 @@ Privacy
 
 License
 - Source code © 2026. Word pairs list is original to this project.
+
+Developer utilities
+- E2E tests (production build): `npm run test:e2e`. They boot a server on port 43124 automatically.
+- Capture marketing screenshots locally (390×844): `npm run screenshots` (writes PNGs to `public/screenshots/`).
+- To generate artifact screenshots under `/opt/cursor/artifacts`, run the E2E suite; it writes curated images used in reviews.
 

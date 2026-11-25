@@ -167,3 +167,81 @@ button {
   opacity: 0.5;
   mask-image: radial-gradient(closest-side, rgba(0,0,0,1), rgba(0,0,0,0.1));
 }
+
+/* --- Enhanced theme and components (visual redesign) --- */
+
+/* Rich textured background (non-flat) */
+body {
+  background:
+    radial-gradient(1200px 700px at 30% -10%, rgba(224, 178, 17, 0.06), transparent 60%),
+    radial-gradient(1000px 600px at 100% 0%, rgba(58, 167, 255, 0.05), transparent 55%),
+    radial-gradient(900px 500px at -10% 100%, rgba(20, 28, 40, 0.7), transparent 50%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 2px, rgba(0,0,0,0.02) 2px 4px),
+    var(--background);
+}
+
+/* Dossier-like cards with texture */
+.card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0) 30%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 6px, rgba(0,0,0,0.02) 6px 12px),
+    linear-gradient(180deg, var(--surface), var(--muted-surface));
+}
+
+/* Card faces */
+.flip-front {
+  background:
+    radial-gradient(100% 80% at 50% 0%, rgba(255,255,255,0.04), transparent 70%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 8px, rgba(0,0,0,0.02) 8px 16px),
+    linear-gradient(180deg, var(--surface), var(--muted-surface));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+}
+.flip-back {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+}
+.word-card {
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.06), transparent 70%),
+    linear-gradient(180deg, var(--surface), var(--muted-surface));
+}
+.word-card.civilian { box-shadow: 0 8px 30px rgba(66, 211, 146, 0.18) inset, 0 8px 24px rgba(66, 211, 146, 0.18); }
+.word-card.undercover { box-shadow: 0 8px 30px rgba(255, 93, 93, 0.18) inset, 0 8px 24px rgba(255, 93, 93, 0.18); }
+.word-card.mrwhite {
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.1), transparent 70%),
+    linear-gradient(180deg, #171b22, #0e1218);
+  box-shadow: 0 8px 30px rgba(224, 178, 17, 0.22) inset, 0 8px 24px rgba(224,178,17,0.18);
+}
+.word-text {
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+/* Sticky thumb-zone bar for primary actions */
+.thumb-bar {
+  position: sticky;
+  bottom: calc(var(--safe-bottom) + 8px);
+  z-index: 10;
+  margin-top: 8px;
+}
+
+/* Stamp-style elimination reveal */
+@keyframes stamp {
+  0% { transform: scale(0.8) rotate(-6deg); opacity: 0; }
+  60% { transform: scale(1.06) rotate(-6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-6deg); }
+}
+.stamp {
+  display: inline-block;
+  padding: 10px 14px;
+  border: 2px dashed rgba(255,93,93,0.8);
+  color: #ff9b9b;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  transform: rotate(-6deg);
+  animation: stamp 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  user-select: none;
+}
