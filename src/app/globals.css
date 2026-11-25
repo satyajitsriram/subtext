@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b0f14;
+  --surface: #121822;
+  --muted-surface: #0f141c;
+  --foreground: #e6e8ec;
+  --muted-foreground: #b5bcc8;
+  --accent: #e0b211;
+  --danger: #ff5d5d;
+  --success: #42d392;
+  --info: #3aa7ff;
+  --ring: #e0b211;
+
+  --safe-top: env(safe-area-inset-top);
+  --safe-right: env(safe-area-inset-right);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted-surface: var(--muted-surface);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --ring-color: var(--ring);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system,
+    Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+  --font-display: var(--font-heading), var(--font-body), ui-sans-serif,
+    system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    Apple Color Emoji, Segoe UI Emoji;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0f14;
+    --surface: #121822;
+    --muted-surface: #0f141c;
+    --foreground: #e6e8ec;
+    --muted-foreground: #b5bcc8;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base interactive elements */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.heading {
+  font-family: var(--font-heading), var(--font-body), ui-sans-serif,
+    system-ui, -apple-system;
+  letter-spacing: 0.02em;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--surface), var(--muted-surface));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
+    0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.flip {
+  perspective: 1000px;
+}
+.flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.flip-front,
+.flip-back {
+  backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner {
+    transition: none;
+  }
+}
