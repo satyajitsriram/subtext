@@ -11,13 +11,26 @@ async function saveShot(page, name: string) {
 
 test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ page }) => {
   await page.goto("/play");
+  await page.evaluate(() => localStorage.clear());
   await expect(page.getByText("Subtext")).toBeVisible();
   await saveShot(page, "home-real");
 
-  await page.getByPlaceholder("e.g. Alice, Bob, Carol...").fill("Alice, Bob, Carol, Dave, Erin");
-  await page.getByRole("button", { name: "Save Players" }).click();
-  const cont = page.getByRole("button", { name: "Continue to Setup" });
-  if (await cont.isVisible().catch(() => false)) await cont.click();
+  // Add players one by one
+  const startBtn = page.getByRole("button", { name: "Start" });
+  if (await startBtn.isVisible().catch(() => false)) {
+    await startBtn.click();
+  } else {
+    const firstBtn = page.locator("button").first();
+    if (await firstBtn.isVisible().catch(() => false)) await firstBtn.click();
+  }
+  const addName = async (name: string) => {
+    const input = page.getByPlaceholder("Enter player name");
+    await expect(input).toBeVisible();
+    await input.fill(name);
+    await page.getByRole("button", { name: "Add" }).click();
+  };
+  for (const n of ["Alice", "Bob", "Carol", "Dave", "Erin"]) await addName(n);
+  await page.getByRole("button", { name: "Continue to Setup" }).click();
   await expect(page.getByRole("button", { name: "Deal Words" })).toBeVisible();
   await saveShot(page, "players-real");
 
@@ -32,6 +45,18 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   // Tap to reveal and capture
   const flip = page.locator("button.flip").first();
   await flip.click();
+  await page.locator(".flip-inner[data-open=\"true\"]").first().waitFor({ state: "attached", timeout: 2000 });
+  // Assert the revealed content actually includes the assigned word or Mr. White
+  const visibleText = await page.locator("button.flip .flip-back").first().innerText();
+  const secret = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem("subtext_state")!);
+    const roles = new Map(st.assignedRoles.map((r: any) => [r.playerId, r.role]));
+    const pid = st.players[0].id; // Alice
+    const role = roles.get(pid);
+    if (role === "MR_WHITE") return "You are Mr. White";
+    return role === "CIVILIAN" ? st.civilianWord : st.undercoverWord;
+  });
+  expect(visibleText).toContain(secret);
   await saveShot(page, "card-revealed");
   // Hide and go next repeatedly
   await flip.click(); // hide
@@ -43,9 +68,11 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
     await page.getByRole("button", { name: /Next Player|Finish Reveal/ }).click();
   }
   // Last player
-  await page.locator("button.flip").first().click();
-  await page.locator("button.flip").first().click();
-  await page.getByRole("button", { name: "Finish Reveal" }).click();
+  // Move to last player if still on the fourth
+  const maybeNext = page.getByRole("button", { name: "Next Player" });
+  if (await maybeNext.isVisible().catch(() => false)) await maybeNext.click();
+  await page.locator("button.flip").first().click(); // reveal last
+  await page.locator("button.flip").first().click(); // hide last
   await page.getByRole("button", { name: "Start Round" }).click();
 
   await expect(page.getByRole("heading", { name: "Round" })).toBeVisible();
@@ -60,6 +87,8 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   await page.getByRole("button", { name: /Confirm Elimination/ }).click();
 
   // Elimination or Mr. White Guess
+  // Wait for any fade-in to complete
+  await page.waitForTimeout(650);
   const isElim = await page.getByRole("heading", { name: "Eliminated" }).isVisible().catch(() => false);
   if (isElim) {
     await saveShot(page, "elimination-real");

@@ -6,6 +6,7 @@ import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { Avatar } from "@/components/Avatar";
 
 type View =
+  | "home"
   | "players"
   | "setup"
   | "reveal"
@@ -18,7 +19,7 @@ type View =
 
 export default function PlayPage() {
   const { state, dispatch, checkAndFinishVictory } = useGame();
-  const [view, setView] = useState<View>("players");
+  const [view, setView] = useState<View>("home");
   const [namesText, setNamesText] = useState("");
   const [tieMode, setTieMode] = useState(false);
   const [revealIndex, setRevealIndex] = useState(0);
@@ -51,12 +52,7 @@ export default function PlayPage() {
     if (typeof window === "undefined") return;
     localStorage.setItem("subtext_state", JSON.stringify(state));
   }, [state]);
-  // Auto-advance to setup when players are present
-  useEffect(() => {
-    if (view === "players" && state.players.length >= 3) {
-      setView("setup");
-    }
-  }, [state.players.length, view]);
+  // Manual navigation only; no auto-advance to avoid UI flakiness
 
   const roleMap = useMemo(
     () => new Map(state.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []),
@@ -73,15 +69,10 @@ export default function PlayPage() {
   }
 
   function onSavePlayers() {
-    const names = namesText
-      .split(/\n|,/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (names.length < 3 || names.length > 20) {
+    if (state.players.length < 3 || state.players.length > 20) {
       alert("Enter between 3 and 20 player names");
       return;
     }
-    dispatch({ type: "INIT_PLAYERS", names });
     goSetup();
   }
 
@@ -192,24 +183,78 @@ export default function PlayPage() {
           <h1 className="heading text-xl">Subtext</h1>
         </header>
 
-        {view === "players" && (
-          <div className="card p-4 space-y-3">
-            <label className="block text-sm text-muted-foreground">Names (comma or newline separated)</label>
-            <textarea
-              className="w-full rounded-md bg-background border border-white/10 p-3 outline-none focus:ring-2 focus:ring-[--ring]"
-              rows={6}
-              placeholder="e.g. Alice, Bob, Carol..."
-              value={namesText}
-              onChange={(e) => setNamesText(e.target.value)}
-            />
-            <button onClick={onSavePlayers} className="tap-target w-full rounded-md bg-accent px-4 py-2 font-medium text-black active:opacity-90">
-              Save Players
+        {view === "home" && (
+          <div className="card p-6 space-y-4 text-center">
+            <p className="text-sm text-muted-foreground">Offline party word game</p>
+            <button onClick={() => setView("players")} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
+              Start
             </button>
-            {state.players.length >= 3 && (
-              <button onClick={() => setView("setup")} className="tap-target w-full rounded-md border border-accent/40 px-4 py-2 font-medium">
+            <button onClick={() => setView("leaderboard")} className="tap-target w-full rounded-lg border border-accent/40 px-4 py-3 font-medium">
+              Leaderboard
+            </button>
+          </div>
+        )}
+
+        {view === "players" && (
+          <div className="card p-4 space-y-4">
+            <div>
+              <label className="block text-sm text-muted-foreground">Add players (3–20)</label>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  className="flex-1 rounded-md bg-background border border-white/10 p-2"
+                  placeholder="Enter player name"
+                  value={namesText}
+                  onChange={(e) => setNamesText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const name = namesText.trim();
+                      if (!name) return;
+                      const current = [...state.players.map((p) => p.name), name];
+                      dispatch({ type: "INIT_PLAYERS", names: current });
+                      setNamesText("");
+                    }
+                  }}
+                />
+                <button
+                  className="rounded-md border border-accent/40 px-3 py-2"
+                  onClick={() => {
+                    const name = namesText.trim();
+                    if (!name) return;
+                    const current = [...state.players.map((p) => p.name), name];
+                    dispatch({ type: "INIT_PLAYERS", names: current });
+                    setNamesText("");
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {state.players.map((p) => (
+                <span key={p.id} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
+                  <Avatar name={p.name} />
+                  <span className="heading">{p.name}</span>
+                  <button
+                    aria-label={`Remove ${p.name}`}
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      const remaining = state.players.filter((x) => x.id !== p.id).map((x) => x.name);
+                      dispatch({ type: "INIT_PLAYERS", names: remaining });
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <button disabled={state.players.length < 3} onClick={onSavePlayers} className="tap-target w-full rounded-md bg-accent px-4 py-2 font-medium text-black disabled:opacity-40">
                 Continue to Setup
               </button>
-            )}
+              <button onClick={() => setView("home")} className="tap-target w-full rounded-md border border-accent/40 px-4 py-2 font-medium">
+                Back
+              </button>
+            </div>
           </div>
         )}
 
@@ -269,7 +314,8 @@ export default function PlayPage() {
               </button>
             )}
             {e2e ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-3">
                 {state.players.map((p) => {
                   const role = roleMap.get(p.id);
                   const secret =
@@ -281,7 +327,7 @@ export default function PlayPage() {
                   const open = !!revealed[p.id];
                   return (
                     <button key={p.id} onClick={() => setRevealed((r) => ({ ...r, [p.id]: !r[p.id] }))} className="flip card tap-target relative h-40 w-full overflow-hidden">
-                      <div className={`flip-inner h-full w-full ${open ? "rotate-y-180" : ""}`} style={{ transform: open ? "rotateY(180deg)" : "none" }}>
+                      <div className={`flip-inner h-full w-full`} style={{ transform: open ? "rotateY(180deg)" : "none" }} data-open={open ? "true" : "false"}>
                         <div className="flip-front absolute inset-0 flex items-center justify-center p-3">
                           <div className="text-center">
                             <div className="heading text-lg">{p.name}</div>
@@ -298,6 +344,14 @@ export default function PlayPage() {
                     </button>
                   );
                 })}
+                </div>
+                <button
+                  disabled={!canStartRound}
+                  onClick={startRound}
+                  className="tap-target mt-2 w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
+                >
+                  Start Round
+                </button>
               </div>
             ) : (
               (() => {
@@ -328,11 +382,11 @@ export default function PlayPage() {
                       }}
                       className="flip card tap-target relative mx-auto h-56 w-full overflow-hidden"
                     >
-                      <div className={`flip-inner h-full w-full ${isOpen ? "rotate-y-180" : ""}`} style={{ transform: isOpen ? "rotateY(180deg)" : "none" }}>
+                      <div className={`flip-inner h-full w-full`} style={{ transform: isOpen ? "rotateY(180deg)" : "none" }} data-open={isOpen ? "true" : "false"}>
                         <div className="flip-front absolute inset-0 flex items-center justify-center p-3">
                           <div className="text-center">
                             <div className="heading text-lg">{p?.name}</div>
-                            <div className="text-xs text-muted-foreground">{isOpen ? "Hide" : "Tap to reveal"}</div>
+                            <div className="text-xs text-muted-foreground">Tap to reveal</div>
                           </div>
                         </div>
                         <div className="flip-back absolute inset-0 flex items-center justify-center p-3">
@@ -349,24 +403,28 @@ export default function PlayPage() {
                       </div>
                       <div>{state.settings.allowRecheckWord ? "Re-check enabled" : "No re-checks"}</div>
                     </div>
-                    <button
-                      disabled={!pid || isOpen || !hasRevealed[pid]}
-                      onClick={() => {
-                        const next = revealIndex + 1;
-                        setRevealIndex(next);
-                        setIsOpen(false);
-                      }}
-                      className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
-                    >
-                      {revealIndex + 1 >= state.players.length ? "Finish Reveal" : "Next Player"}
-                    </button>
+                    {revealIndex + 1 < state.players.length ? (
+                      <button
+                        disabled={!pid || isOpen || !hasRevealed[pid]}
+                        onClick={() => {
+                          const next = revealIndex + 1;
+                          setRevealIndex(next);
+                          setIsOpen(false);
+                        }}
+                        className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
+                      >
+                        Next Player
+                      </button>
+                    ) : null}
+                    {revealIndex + 1 >= state.players.length ? (
+                      <button disabled={!state.players.every((pl) => hasRevealed[pl.id])} onClick={startRound} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40">
+                        Start Round
+                      </button>
+                    ) : null}
                   </div>
                 );
               })()
             )}
-            <button disabled={!canStartRound} onClick={startRound} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40">
-              Start Round
-            </button>
           </div>
         )}
 
@@ -465,7 +523,7 @@ export default function PlayPage() {
         {view === "eliminated" && (
           <div className="mx-auto max-w-md space-y-6 text-center animate-pop">
             <h1 className="heading text-2xl">Eliminated</h1>
-            <div className="card p-6 animate-pulse-fade">
+            <div className="card p-6">
               {(() => {
                 const pid = state.rounds[state.rounds.length - 1]?.eliminatedPlayerId ?? "";
                 const player = state.players.find((p) => p.id === pid);
