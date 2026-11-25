@@ -17,6 +17,7 @@ type Action =
   | { type: "SET_STATUS"; status: GameState["status"] }
   | { type: "START_FACEOFF"; playerIds: string[] }
   | { type: "GODDESS_DECIDE"; playerId: string }
+  | { type: "SET_FALAFEL"; targetId: string; effect: "PROTECT" | "SABOTAGE" }
   | { type: "MARK_BOOMERANG_USED" }
   | { type: "RESTART_SAME_PLAYERS" }
   | { type: "RESET_ALL" }
@@ -103,6 +104,17 @@ function reducer(state: GameState, action: Action): GameState {
       // Eliminate chosen by Goddess
       const next = eliminatePlayer(state, action.playerId);
       return { ...next, status: "voting" };
+    }
+    case "SET_FALAFEL": {
+      const rounds = state.rounds.slice();
+      if (rounds.length > 0) {
+        rounds[rounds.length - 1] = {
+          ...rounds[rounds.length - 1],
+          falafelGivenToId: action.targetId,
+          falafelEffect: action.effect,
+        };
+      }
+      return { ...state, rounds };
     }
     case "SET_TIE_MODE":
       return { ...state, settings: { ...state.settings, tieBreaker: action.mode } };

@@ -7,7 +7,7 @@ import type { TieBreaker } from "@/lib/types";
 
 const tieOptions: { id: TieBreaker; label: string; desc: string }[] = [
   { id: "revote", label: "Face-off & Revote", desc: "Tied players give one more clue; revote among them." },
-  { id: "random", label: "Goddess of Justice", desc: "Randomly eliminate one among tied players." },
+  { id: "random", label: "Random pick", desc: "Randomly eliminate one among tied players." },
   { id: "manual", label: "Manual (RPS)", desc: "Resolve outside the app (e.g., rock-paper-scissors)." }
 ];
 
@@ -131,9 +131,14 @@ export default function SetupPage() {
           </div>
         </div>
 
-        <div className="card p-4 space-y-3">
-          <h2 className="heading text-lg">Special Roles</h2>
-          <div className="grid grid-cols-1 gap-2">
+        <div className="card p-0 overflow-hidden">
+          <details className="group">
+            <summary className="list-none cursor-pointer bg-muted-surface px-4 py-3 heading">
+              Extra roles (optional)
+              <span className="ml-2 text-xs text-muted-foreground">(off by default)</span>
+            </summary>
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-1 gap-2">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -210,7 +215,9 @@ export default function SetupPage() {
               />
               <span className="text-sm">Joy Fool (if first eliminated, +4 pts)</span>
             </label>
-          </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <button

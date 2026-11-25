@@ -30,6 +30,8 @@ async function main() {
     );
   }
   // Players
+  await page.goto(`${base}/`, { waitUntil: "domcontentloaded" });
+  await page.screenshot({ path: path.join(outDir, "home.png") });
   await page.goto(`${base}/players`, { waitUntil: "domcontentloaded" });
   await page.type("textarea", "A, B, C, D, E");
   await clickByText("button", "Save Players");
@@ -48,6 +50,12 @@ async function main() {
     for (const c of cards) (c as HTMLElement).click();
   });
   await page.screenshot({ path: path.join(outDir, "reveal.png") });
+  // Reveal-shown: flip first card
+  await page.evaluate(() => {
+    const first = document.querySelector("button.flip") as HTMLElement | null;
+    first?.click();
+  });
+  await page.screenshot({ path: path.join(outDir, "reveal-shown.png") });
 
   // Begin round by mutating state (to avoid manual taps)
   await page.evaluate(() => {
@@ -66,6 +74,55 @@ async function main() {
   await clickByText("button", "Proceed to Voting");
   await page.waitForSelector("main", { timeout: 5000 });
   await page.screenshot({ path: path.join(outDir, "vote.png") });
+
+  // Tie face-off screen (force)
+  await page.evaluate(() => {
+    const raw = localStorage.getItem("subtext_state");
+    if (!raw) return;
+    const st = JSON.parse(raw);
+    const ids = st.alivePlayerIds.slice(0, 2);
+    const r = st.rounds[st.rounds.length - 1];
+    r.faceOffIds = ids;
+    localStorage.setItem("subtext_state", JSON.stringify(st));
+    window.location.href = "/faceoff";
+  });
+  await page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 5000 }).catch(() => {});
+  await page.screenshot({ path: path.join(outDir, "tie-faceoff.png") });
+
+  // Revote screen
+  await page.goto(`${base}/revote`, { waitUntil: "domcontentloaded" });
+  await page.screenshot({ path: path.join(outDir, "revote.png") });
+
+  // Elimination reveal (force one elimination)
+  await page.evaluate(() => {
+    const raw = localStorage.getItem("subtext_state");
+    if (!raw) return;
+    const st = JSON.parse(raw);
+    const target = st.alivePlayerIds[0];
+    st.alivePlayerIds = st.alivePlayerIds.slice(1);
+    const r = st.rounds[st.rounds.length - 1];
+    r.eliminatedPlayerId = target;
+    localStorage.setItem("subtext_state", JSON.stringify(st));
+    window.location.href = "/eliminated";
+  });
+  await page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 5000 }).catch(() => {});
+  await page.screenshot({ path: path.join(outDir, "elimination-reveal.png") });
+
+  // Rules and Leaderboard
+  // Setup Extras screenshot
+  await page.goto(`${base}/setup`, { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const sum = Array.from(document.querySelectorAll("summary")).find((s) =>
+      (s.textContent || "").toLowerCase().includes("extra roles")
+    ) as HTMLElement | undefined;
+    sum?.click();
+  });
+  await page.screenshot({ path: path.join(outDir, "setup-extras.png") });
+
+  await page.goto(`${base}/rules`, { waitUntil: "domcontentloaded" });
+  await page.screenshot({ path: path.join(outDir, "rules.png") });
+  await page.goto(`${base}/leaderboard`, { waitUntil: "domcontentloaded" });
+  await page.screenshot({ path: path.join(outDir, "leaderboard.png") });
 
   // Find Mr. White and eliminate to reach guess screen
   const mrWhiteIndex = await page.evaluate(() => {

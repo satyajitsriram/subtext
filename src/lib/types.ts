@@ -69,6 +69,7 @@ export interface RoundState {
   eliminatedPlayerId?: string;
   mrMemeId?: string; // for this round
   falafelGivenToId?: string; // target of vendor this round
+  falafelEffect?: "PROTECT" | "SABOTAGE";
 }
 
 export interface GameState {

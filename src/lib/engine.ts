@@ -194,10 +194,27 @@ export function castVotes(
     if ((!voterIsAlive && !allowGhost) || !aliveSet.has(target)) continue;
     counts[target] = (counts[target] || 0) + 1;
   }
+  // Falafel sabotage baseline +1 on target
+  const lastRound = state.rounds[state.rounds.length - 1];
+  if (lastRound?.falafelEffect === "SABOTAGE" && lastRound.falafelGivenToId && aliveSet.has(lastRound.falafelGivenToId)) {
+    counts[lastRound.falafelGivenToId] = (counts[lastRound.falafelGivenToId] || 0) + 1;
+  }
   const max = Math.max(0, ...Object.values(counts));
-  const topIds = Object.entries(counts)
+  let topIds = Object.entries(counts)
     .filter(([, c]) => c === max)
     .map(([id]) => id);
+  // Falafel protection: ignore protected target from elimination
+  if (lastRound?.falafelEffect === "PROTECT" && lastRound.falafelGivenToId) {
+    if (topIds.includes(lastRound.falafelGivenToId)) {
+      // remove protected and recompute next highest excluding protected
+      const filtered = { ...counts };
+      delete filtered[lastRound.falafelGivenToId];
+      const nmax = Math.max(0, ...Object.values(filtered));
+      topIds = Object.entries(filtered)
+        .filter(([, c]) => c === nmax)
+        .map(([id]) => id);
+    }
+  }
   return { topIds, counts };
 }
 

@@ -13,6 +13,18 @@ export default function RoundPage() {
     if (state.status !== "in_round" || state.rounds.length === 0) {
       router.replace("/reveal");
     }
+    // Falafel Vendor private selection
+    const vendorId = state.settings.specials.falafelVendor ? state.specials?.falafelVendorId : undefined;
+    const last = state.rounds[state.rounds.length - 1];
+    if (
+      state.settings.specials.falafelVendor &&
+      vendorId &&
+      state.alivePlayerIds.includes(vendorId) &&
+      !last?.falafelGivenToId
+    ) {
+      router.replace("/vendor");
+      return;
+    }
     const v = checkVictory(state);
     if (v) {
       dispatch({ type: "END_WITH_VICTORY", victory: v });

@@ -12,6 +12,7 @@ import {
   eliminatePlayer,
   beginRound,
   mrWhiteGuessVictory,
+  castVotes,
 } from "./engine";
 import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { GameSettings } from "./types";
@@ -122,6 +123,34 @@ describe("engine", () => {
     expect(c.score).toBe(0);
   });
 
+  it("falafel vendor protect prevents top elimination; sabotage biases votes", () => {
+    const players = initPlayersFromNames(["A", "B", "C", "D"]);
+    let st = startNewGame(
+      players,
+      { ...baseSettings, numUndercovers: 1, numMrWhites: 0, specials: { ...baseSettings.specials, falafelVendor: true } },
+      WORD_PAIRS_ALL,
+      [],
+      () => 0.22
+    );
+    // Start round and set falafel to protect player B (players[1])
+    st = beginRound(st);
+    const targetProtect = st.players[1].id;
+    st.rounds[st.rounds.length - 1].falafelGivenToId = targetProtect;
+    st.rounds[st.rounds.length - 1].falafelEffect = "PROTECT";
+    // Votes tie on B and C, ensure topIds excludes protected B
+    const voterIds = st.alivePlayerIds.slice(0, 2);
+    const votes: Record<string, string> = {};
+    votes[voterIds[0]] = targetProtect; // vote B
+    votes[voterIds[1]] = st.players[2].id; // vote C
+    const { topIds } = castVotes(st, votes);
+    expect(topIds).toContain(st.players[2].id);
+    expect(topIds).not.toContain(targetProtect);
+    // Now sabotage on C adds +1 baseline, making C lead (2 vs 1)
+    st.rounds[st.rounds.length - 1].falafelEffect = "SABOTAGE";
+    st.rounds[st.rounds.length - 1].falafelGivenToId = st.players[2].id;
+    const { topIds: topIds2 } = castVotes(st, votes);
+    expect(topIds2).toEqual([st.players[2].id]);
+  });
   it("lovers elimination cascades; duelists scoring; joy fool bonus", () => {
     const players = initPlayersFromNames(["A", "B", "C", "D", "E"]);
     let st = startNewGame(
