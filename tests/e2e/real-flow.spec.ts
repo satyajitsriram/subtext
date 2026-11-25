@@ -133,10 +133,16 @@ if (await startBtn2.isVisible().catch(() => false)) await startBtn2.click();
   await saveShot(page, "round-real");
   await page.getByRole("button", { name: "Proceed to Voting" }).click();
 
-  // Vote and eliminate any player
+  // Vote and eliminate a Civilian specifically for a green stamp
   await expect(page.getByRole("heading", { name: "Voting" })).toBeVisible();
-  const firstBtn = page.getByRole("button", { name: "Alice" });
-  await firstBtn.click(); // show selected state
+  const civVoteName = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem("subtext_state")!);
+    const roles = new Map(st.assignedRoles.map((r: any) => [r.playerId, r.role]));
+    const alive = st.players.filter((p: any) => st.alivePlayerIds.includes(p.id));
+    const civ = alive.find((p: any) => roles.get(p.id) === "CIVILIAN") || alive[0];
+    return civ.name as string;
+  });
+  await page.getByRole("button", { name: civVoteName }).click(); // select civilian
   await saveShot(page, "vote-real");
   await page.getByRole("button", { name: /Confirm Elimination/ }).click();
 
