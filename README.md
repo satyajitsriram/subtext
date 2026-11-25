@@ -1,55 +1,89 @@
-Subtext — pass-and-play social deduction word game (PWA)
-========================================================
+# Subtext
 
-Subtext is an original, ad‑free, offline‑capable web app inspired by the mechanics of “Undercover™: Word Party Game”. It supports 3–20 players on a single phone, with pass‑and‑play word reveals, voting, Mr. White guesses, and a session leaderboard.
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org) [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)](https://tailwindcss.com/) [![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8)](https://web.dev/progressive-web-apps/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-What’s included
-- Offline‑ready PWA (manifest + service worker), Add to Home Screen.
-- Mobile‑first UI with safe‑area insets, dark mode, haptic taps, optional sounds (off by default).
-- Full rules: Civilians, Undercover, Mr. White; random speaking order; tie‑break options; Mr. White immediate‑win guess; win and scoring (Civilians +2, Mr. White +6, Undercover +10).
-- Local persistence: players, leaderboard, custom word pairs.
-- Unit tests for the game engine (role assignment, word pick, Mr. White match, victory, scoring).
+Pass-and-play social deduction word game — free, ad‑free, offline, and installable on iPhone as a PWA.
 
-Local development
-1) Install deps: `npm install`
-2) Start dev server (binds to port 43123): `npm run dev`
-3) Open http://localhost:43123
+## Screenshots
 
-Build & preview production
-1) `npm run build`
-2) `npm run start` (defaults to port 3000)
+<table>
+  <tr>
+    <td><img src="docs/screenshots/home.png" alt="Home" width="220"/></td>
+    <td><img src="docs/screenshots/players.png" alt="Players" width="220"/></td>
+    <td><img src="docs/screenshots/setup.png" alt="Setup" width="220"/></td>
+    <td><img src="docs/screenshots/pass-to.png" alt="Pass to" width="220"/></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/card-word.png" alt="Card word" width="220"/></td>
+    <td><img src="docs/screenshots/vote.png" alt="Vote" width="220"/></td>
+    <td><img src="docs/screenshots/elimination.png" alt="Elimination" width="220"/></td>
+    <td><img src="docs/screenshots/win.png" alt="Win" width="220"/></td>
+  </tr>
+</table>
 
-Run tests
-`npm test`
+## Features
 
-Deploy (Vercel)
-- Import the repo in Vercel. Framework preset: Next.js.
-- Build command: `next build` (default). Output: `.vercel/output` handled automatically.
-- Node version: use 18+ (project tested on 18 and 20).
-- No env vars required. Images are `unoptimized` to simplify PWA offline.
-- PWA is enabled in production only. The manifest and icons live under `public/`.
-- iOS: add to Home Screen for a full‑screen, standalone feel. We set `apple-mobile-web-app-capable=yes`, `apple-touch-icon`, and theme color.
+- **Offline-first PWA**: installable on iPhone; works without network after first load
+- **Pass‑and‑play**: one device, local rounds with any group size (3–20)
+- **Beautiful UI**: polished, readable dark theme with large touch targets
+- **Word pools**: curated civilian/undercover pairs; optional extra roles
+- **Fully tested**: Vitest unit tests and Playwright end‑to‑end flows
 
-Notes on rules parity
-- Players: 3–20. At least one infiltrator (Undercover or Mr. White).
-- Random speaking order each round (Mr. White can start).
-- Voting ties: choose “Face‑off & Revote”, “Goddess of Justice” (random), or “Manual” (e.g., rock‑paper‑scissors).
-- Mr. White: eliminated Mr. White may guess the Civilians’ word; a forgiving matcher (case, accents, whitespace, simple plurals, small typos) applies. Group can also manually accept.
-- Victory: Civilians win when all infiltrators are eliminated. Infiltrators win if only one Civilian remains. Mr. White also wins if their guess is accepted.
-- Scoring on victory only: Civilians +2 each, Mr. White +6, Undercover +10.
+## How to play
 
-Design & assets
-- Original name, UI, icons, and sounds. No copied art, text, or word lists.
-- Fonts self‑hosted via `next/font` (Barlow Semi Condensed + Spectral).
+- **Civilians** all share the same secret word (e.g., “bagel”).
+- **Undercover** gets a similar word (e.g., “bublik”) and tries to blend in.
+- **Mr. White** gets no word — they improvise, and if eliminated can win by guessing the Civilians’ word.
+- Everyone, in turn, says a one‑word clue. Then vote to eliminate. Repeat until a team wins.
+- **Scoring**: Civilians +2, Mr. White +6, Undercover +10. Optional extra roles are available but off by default.
 
-Privacy
-- 100% client‑side. No analytics, no tracking, no network access after load.
+## Tech stack
 
-License
-- Source code © 2026. Word pairs list is original to this project.
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS
+- next-pwa for offline support and installability
+- Vitest + Playwright for tests
 
-Developer utilities
-- E2E tests (production build): `npm run test:e2e`. They boot a server on port 43124 automatically.
-- Capture marketing screenshots locally (390×844): `npm run screenshots` (writes PNGs to `public/screenshots/`).
-- To generate artifact screenshots under `/opt/cursor/artifacts`, run the E2E suite; it writes curated images used in reviews.
+## Getting started
 
+```bash
+# Install dependencies
+npm install
+
+# Run dev server
+npm run dev
+
+# Unit tests (Vitest)
+npm test
+
+# End-to-end tests (Playwright)
+npx playwright install --with-deps
+npm run test:e2e
+```
+
+## Deploy
+
+Vercel is recommended.
+- Import the repository and select the **Next.js** preset.
+- No environment variables are required.
+
+## Add to iPhone Home Screen
+
+- Open in Safari, tap the Share button, then “Add to Home Screen”.
+- Launch from the icon for a full‑screen, app‑like experience.
+
+## Project structure
+
+```
+src/
+  app/           # routes and pages
+  components/    # shared UI
+  data/          # word pairs
+  lib/           # game engine + state
+public/          # PWA icons + manifest
+scripts/         # tooling and screenshot capture
+```
+
+## License
+
+MIT © 2026 Satyajit Sriram. See [LICENSE](LICENSE).
