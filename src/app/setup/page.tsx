@@ -94,6 +94,14 @@ export default function SetupPage() {
             />
             <span className="text-sm">Allow players to re-check their word</span>
           </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={state.settings.includeSpicy}
+              onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { includeSpicy: e.target.checked } })}
+            />
+            <span className="text-sm">Include spicy/adult word pairs</span>
+          </label>
           <div className="mt-3 space-y-2">
             <div className="text-sm text-muted-foreground">Tie handling</div>
             <div className="grid grid-cols-1 gap-2">
