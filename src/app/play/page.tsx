@@ -236,11 +236,13 @@ export default function PlayPage() {
                 </button>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <ol className="max-h-[50vh] overflow-y-auto pr-1 space-y-2">
               {state.players.map((p) => (
-                <span key={p.id} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
-                  <Avatar name={p.name} />
-                  <span className="heading">{p.name}</span>
+                <li key={p.id} className="flex items-center justify-between rounded-md border border-white/10 px-3 py-2 bg-muted-surface/40">
+                  <div className="flex items-center gap-2">
+                    <Avatar name={p.name} />
+                    <span className="heading">{p.name}</span>
+                  </div>
                   <button
                     aria-label={`Remove ${p.name}`}
                     className="text-muted-foreground hover:text-foreground"
@@ -251,9 +253,9 @@ export default function PlayPage() {
                   >
                     ×
                   </button>
-                </span>
+                </li>
               ))}
-            </div>
+            </ol>
             <div className="h-4" />
             <div className="action-bar">
               <button disabled={state.players.length < 3} onClick={onSavePlayers} className="btn-primary w-full" aria-disabled={state.players.length < 3}>

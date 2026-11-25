@@ -23,9 +23,6 @@ async function addPlayers(page) {
   const startBtn = page.getByRole("button", { name: "Start" });
   if (await startBtn.isVisible().catch(() => false)) {
     await startBtn.click();
-  } else {
-    const firstBtn = page.locator("button").first();
-    if (await firstBtn.isVisible().catch(() => false)) await firstBtn.click();
   }
   const add = async (name: string) => {
     const input = page.getByPlaceholder("Enter player name");
