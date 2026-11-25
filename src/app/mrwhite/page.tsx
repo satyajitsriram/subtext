@@ -2,7 +2,7 @@
 import { useGame } from "@/lib/state";
 import { normalizeText, isLooseMatch } from "@/lib/engine";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function MrWhitePage() {
   const { state, dispatch } = useGame();
@@ -15,10 +15,11 @@ export default function MrWhitePage() {
     [state.assignedRoles, eliminatedId]
   );
 
-  if (!eliminatedId || eliminatedRole !== "MR_WHITE") {
-    router.replace("/round");
-    return null;
-  }
+  const shouldRedirect = !eliminatedId || eliminatedRole !== "MR_WHITE";
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/round");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   const evaluate = () => {
     const ok = manualAccept || isLooseMatch(state.civilianWord || "", guess);

@@ -29,7 +29,9 @@ export default function WinPage() {
       osc.connect(gain).connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.42);
-      return () => ctx.close();
+      return () => {
+        ctx.close().catch(() => {});
+      };
     }
   }, [state.status, router]);
 

@@ -1,7 +1,7 @@
 "use client";
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function RevengerPage() {
   const { state, dispatch, checkAndFinishVictory } = useGame();
@@ -16,10 +16,11 @@ export default function RevengerPage() {
   );
   const roleMap = new Map(state.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
 
-  if (!isRevenger) {
-    router.replace("/round");
-    return null;
-  }
+  const shouldRedirect = !isRevenger;
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/round");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   function confirm() {
     if (!targetId) return;

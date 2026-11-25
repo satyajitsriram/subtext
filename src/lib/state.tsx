@@ -127,7 +127,7 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, specials: { ...state.specials, boomerangUsed: true } };
     case "RESTART_SAME_PLAYERS": {
       // keep players & scores, start new game with next word
-      const restarted = startNewGame(state.players, state.settings, WORD_PAIRS, state.usedWordIndices);
+      const restarted = startNewGame(state.players, state.settings, WORD_PAIRS_ALL, state.usedWordIndices);
       return restarted;
     }
     case "RESET_ALL":

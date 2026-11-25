@@ -1,7 +1,7 @@
 "use client";
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function BoomerangPage() {
   const { state, dispatch, checkAndFinishVictory } = useGame();
@@ -12,10 +12,11 @@ export default function BoomerangPage() {
   const [selectedId, setSelectedId] = useState<string>("");
   const roleMap = new Map(state.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
 
-  if (voterIds.length < 1 || !state.settings.specials.boomerang || state.specials?.boomerangUsed) {
-    router.replace("/vote");
-    return null;
-  }
+  const shouldRedirect = voterIds.length < 1 || !state.settings.specials.boomerang || state.specials?.boomerangUsed;
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/vote");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   const boomerangName = state.players.find((p) => p.id === state.specials?.boomerangId)?.name || "Boomerang";
 

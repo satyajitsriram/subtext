@@ -13,6 +13,9 @@ export default function Home() {
           <p className="mt-2 text-sm text-muted-foreground">Pass-and-play social deduction word game</p>
         </header>
         <div className="card p-6 space-y-4">
+          <Link href="/play" className="tap-target block w-full rounded-lg bg-accent px-4 py-3 text-center font-medium text-black active:opacity-90">
+            Play Now
+          </Link>
           <Link href="/players" className="tap-target block w-full rounded-lg bg-accent px-4 py-3 text-center font-medium text-black active:opacity-90">
             Manage Players
           </Link>

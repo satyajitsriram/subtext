@@ -2,7 +2,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "@/lib/state";
-import { suggestRoles } from "@/lib/engine";
+import { suggestRoles, startNewGame } from "@/lib/engine";
+import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import type { TieBreaker } from "@/lib/types";
 
 const tieOptions: { id: TieBreaker; label: string; desc: string }[] = [
@@ -17,25 +18,25 @@ export default function SetupPage() {
   const n = state.players.length;
 
   useEffect(() => {
+    // If players are empty, attempt to hydrate from localStorage (robustness for hard reloads)
+    if (n === 0 && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("subtext_state");
+        if (raw) {
+          const st = JSON.parse(raw);
+          if (Array.isArray(st.players) && st.players.length >= 3) {
+            const names = st.players.map((p: any) => String(p.name));
+            dispatch({ type: "INIT_PLAYERS", names });
+          }
+        }
+      } catch {}
+    }
     if (n > 0) {
       const { numUndercovers, numMrWhites } = suggestRoles(n);
       dispatch({ type: "UPDATE_SETTINGS", settings: { numUndercovers, numMrWhites } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n]);
-
-  if (n === 0) {
-    return (
-      <main className="min-h-[100dvh] grid place-items-center p-6">
-        <div className="text-center">
-          <p className="mb-4 text-muted-foreground">Add some players first.</p>
-          <button onClick={() => router.push("/players")} className="rounded-md border border-accent/40 px-4 py-2">
-            Go to Players
-          </button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-[100dvh] px-4 py-6">
@@ -44,6 +45,14 @@ export default function SetupPage() {
           <h1 className="heading text-xl">Setup</h1>
           <p className="text-xs text-muted-foreground">Players: {n}</p>
         </header>
+        {n === 0 && (
+          <div className="text-center card p-4">
+            <p className="mb-3 text-muted-foreground">Add some players first.</p>
+            <button onClick={() => router.push("/players")} className="rounded-md border border-accent/40 px-4 py-2">
+              Go to Players
+            </button>
+          </div>
+        )}
 
         <div className="card p-4 space-y-3">
           <h2 className="heading text-lg">Roles</h2>
@@ -223,9 +232,13 @@ export default function SetupPage() {
         <button
           onClick={() => {
             try {
-              dispatch({ type: "START_GAME" });
-              // go to reveal
-              window.location.href = "/reveal";
+              // Build next game state synchronously to avoid race with navigation
+              const started = startNewGame(state.players, state.settings, WORD_PAIRS_ALL, state.usedWordIndices);
+              dispatch({ type: "LOAD_STATE", state: started });
+              if (typeof window !== "undefined") {
+                localStorage.setItem("subtext_state", JSON.stringify(started));
+              }
+              router.push("/reveal");
             } catch (e: any) {
               alert(e.message || "Invalid setup");
             }

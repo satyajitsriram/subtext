@@ -2,6 +2,7 @@
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { eliminatePlayer } from "@/lib/engine";
 
 export default function VotePage() {
   const { state, dispatch, checkAndFinishVictory } = useGame();
@@ -22,7 +23,9 @@ export default function VotePage() {
       // Resolve tie according to setting
       if (state.settings.tieBreaker === "random") {
         const pick = selectedIds[Math.floor(Math.random() * selectedIds.length)];
-        dispatch({ type: "ELIMINATE", playerId: pick });
+        const next = eliminatePlayer(state, pick);
+        dispatch({ type: "LOAD_STATE", state: next });
+        if (typeof window !== "undefined") localStorage.setItem("subtext_state", JSON.stringify(next));
         const isMrWhite = roleMap.get(pick) === "MR_WHITE";
         if (isMrWhite) {
           router.push("/mrwhite");
@@ -63,7 +66,9 @@ export default function VotePage() {
         router.push("/boomerang");
         return;
       }
-      dispatch({ type: "ELIMINATE", playerId: id });
+      const next = eliminatePlayer(state, id);
+      dispatch({ type: "LOAD_STATE", state: next });
+      if (typeof window !== "undefined") localStorage.setItem("subtext_state", JSON.stringify(next));
       const isMrWhite = roleMap.get(id) === "MR_WHITE";
       const isRevenger = state.settings.specials.revenger && state.specials?.revengerId === id;
       if (isMrWhite) {

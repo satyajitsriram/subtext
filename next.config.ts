@@ -28,7 +28,7 @@ const withPWAWrapped = withPWA({
   runtimeCaching: [
     // Basic runtime caching for pages and assets
     {
-      urlPattern: ({ request }) =>
+      urlPattern: ({ request }: any) =>
         request.destination === "document" ||
         request.destination === "script" ||
         request.destination === "style",
@@ -38,7 +38,7 @@ const withPWAWrapped = withPWA({
       },
     },
     {
-      urlPattern: ({ request }) =>
+      urlPattern: ({ request }: any) =>
         request.destination === "image" ||
         request.destination === "font",
       handler: "CacheFirst",

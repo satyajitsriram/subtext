@@ -2,6 +2,7 @@
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
 import { checkVictory } from "@/lib/engine";
+import { useEffect } from "react";
 
 export default function EliminatedRevealPage() {
   const { state, dispatch } = useGame();
@@ -11,10 +12,11 @@ export default function EliminatedRevealPage() {
   const player = state.players.find((p) => p.id === pid);
   const role = state.assignedRoles?.find((r) => r.playerId === pid)?.role;
 
-  if (!pid || !role) {
-    router.replace("/round");
-    return null;
-  }
+  const shouldRedirect = !pid || !role;
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/round");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   return (
     <main className="min-h-[100dvh] px-4 py-6">

@@ -1,5 +1,24 @@
-import { randomUUID } from "crypto";
 import { AssignedRole, GameSettings, GameState, Player, Role, TieBreaker, WordPair } from "./types";
+// Lightweight UUID generator compatible with browser and Node
+function randomUUID(): string {
+  const globalCrypto: any = (globalThis as any).crypto;
+  if (globalCrypto && typeof globalCrypto.randomUUID === "function") {
+    return globalCrypto.randomUUID();
+  }
+  // Fallback
+  const bytes = new Uint8Array(16);
+  if (globalCrypto && typeof globalCrypto.getRandomValues === "function") {
+    globalCrypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  // Set version and variant bits
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  const b = Array.from(bytes, toHex).join("");
+  return `${b.slice(0, 8)}-${b.slice(8, 12)}-${b.slice(12, 16)}-${b.slice(16, 20)}-${b.slice(20)}`;
+}
 
 // Utility: random shuffle (Fisher-Yates)
 export function shuffleArray<T>(arr: T[], rnd: () => number = Math.random): T[] {

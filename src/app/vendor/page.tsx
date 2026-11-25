@@ -1,7 +1,7 @@
 "use client";
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function VendorPage() {
   const { state, dispatch } = useGame();
@@ -14,10 +14,11 @@ export default function VendorPage() {
   );
   const [targetId, setTargetId] = useState<string>("");
 
-  if (!state.settings.specials.falafelVendor || !vendorId || !state.alivePlayerIds.includes(vendorId)) {
-    router.replace("/round");
-    return null;
-  }
+  const shouldRedirect = !state.settings.specials.falafelVendor || !vendorId || !state.alivePlayerIds.includes(vendorId);
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/round");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   function confirm() {
     if (!targetId) return;

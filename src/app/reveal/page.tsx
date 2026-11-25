@@ -19,14 +19,6 @@ export default function RevealPage() {
   const roles = new Map(state.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
 
-  useEffect(() => {
-    if (state.settings.soundsEnabled && typeof window !== "undefined") {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      setAudioCtx(ctx);
-      return () => ctx.close();
-    }
-  }, [state.settings.soundsEnabled]);
-
   const beep = () => {
     if (!state.settings.soundsEnabled || !audioCtx) return;
     const osc = audioCtx.createOscillator();
@@ -44,6 +36,17 @@ export default function RevealPage() {
   useEffect(() => {
     if (!state.assignedRoles) router.replace("/setup");
   }, [state.assignedRoles, router]);
+
+  useEffect(() => {
+    if (state.settings.soundsEnabled && typeof window !== "undefined") {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioCtx(ctx);
+      return () => {
+        ctx.close().catch(() => {});
+      };
+    }
+    return;
+  }, [state.settings.soundsEnabled]);
 
   if (!state.assignedRoles) return null;
 

@@ -2,10 +2,12 @@
 import { useGame } from "@/lib/state";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PlayersPage() {
   const { state, dispatch } = useGame();
   const [namesText, setNamesText] = useState<string>("");
+  const router = useRouter();
 
   const handleInit = () => {
     const names = namesText

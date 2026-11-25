@@ -1,7 +1,7 @@
 "use client";
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function FaceoffPage() {
   const { state } = useGame();
@@ -10,10 +10,11 @@ export default function FaceoffPage() {
   const ids = round?.faceOffIds || [];
   const players = useMemo(() => state.players.filter((p) => ids.includes(p.id)), [state.players, ids]);
 
-  if (ids.length < 2) {
-    router.replace("/vote");
-    return null;
-  }
+  const shouldRedirect = ids.length < 2;
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/vote");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   return (
     <main className="min-h-[100dvh] px-4 py-6">

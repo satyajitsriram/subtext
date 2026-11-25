@@ -1,7 +1,7 @@
 "use client";
 import { useGame } from "@/lib/state";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function GoddessPage() {
   const { state, dispatch, checkAndFinishVictory } = useGame();
@@ -13,10 +13,11 @@ export default function GoddessPage() {
   const [selectedId, setSelectedId] = useState<string>("");
   const roleMap = new Map(state.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
 
-  if (ids.length < 2 || !goddess) {
-    router.replace("/vote");
-    return null;
-  }
+  const shouldRedirect = ids.length < 2 || !goddess;
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/vote");
+  }, [shouldRedirect, router]);
+  if (shouldRedirect) return null;
 
   function confirm() {
     if (!selectedId) return;
