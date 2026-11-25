@@ -20,6 +20,9 @@ export default function PlayPage() {
   const [view, setView] = useState<View>("players");
   const [namesText, setNamesText] = useState("");
   const [tieMode, setTieMode] = useState(false);
+  const [revealIndex, setRevealIndex] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [hasRevealed, setHasRevealed] = useState<Record<string, boolean>>({});
   const [e2e, setE2e] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -90,7 +93,9 @@ export default function PlayPage() {
 
   // Reveal card helpers
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
-  const canStartRound = state.players.length > 0 && state.players.every((p) => revealed[p.id]) || e2e;
+  const canStartRound = e2e
+    ? state.players.length > 0 && state.players.every((p) => revealed[p.id])
+    : state.players.length > 0 && state.players.every((p) => hasRevealed[p.id]);
 
   function startRound() {
     dispatch({ type: "START_ROUND" });
@@ -148,7 +153,9 @@ export default function PlayPage() {
   function submitGuess() {
     const ok = isLooseMatch(state.civilianWord || "", guess);
     if (ok) {
-      dispatch({ type: "END_WITH_VICTORY", victory: { group: "MR_WHITE", playerIds: state.players.map((p) => p.id) } });
+      const lastElim = state.rounds[state.rounds.length - 1]?.eliminatedPlayerId;
+      const mwWinIds = lastElim ? [lastElim] : (state.assignedRoles || []).filter((r) => r.role === "MR_WHITE").map((r) => r.playerId);
+      dispatch({ type: "END_WITH_VICTORY", victory: { group: "MR_WHITE", playerIds: mwWinIds } });
       setView("win");
       return;
     }
@@ -181,8 +188,7 @@ export default function PlayPage() {
     <main className="min-h-[100dvh] px-4 py-6">
       <div className="mx-auto max-w-md space-y-4">
         <header className="text-center">
-          <h1 className="heading text-xl">Subtext — Classic</h1>
-          <p className="text-xs text-muted-foreground">All-in-one flow</p>
+          <h1 className="heading text-xl">Subtext</h1>
         </header>
 
         {view === "players" && (
@@ -245,7 +251,9 @@ export default function PlayPage() {
           <div className="space-y-3">
             <div className="text-center">
               <h2 className="heading text-lg">Pass & Reveal</h2>
-              <p className="text-xs text-muted-foreground">Tap your card to reveal privately. Tap again to hide.</p>
+              <p className="text-xs text-muted-foreground">
+                {state.settings.allowRecheckWord ? "Pass the phone. Each player may re-check later." : "Pass the phone. Each player may view their card once."}
+              </p>
             </div>
             {e2e && (
               <button
@@ -259,36 +267,102 @@ export default function PlayPage() {
                 Reveal all (test)
               </button>
             )}
-            <div className="grid grid-cols-2 gap-3">
-              {state.players.map((p) => {
-                const role = roleMap.get(p.id);
+            {e2e ? (
+              <div className="grid grid-cols-2 gap-3">
+                {state.players.map((p) => {
+                  const role = roleMap.get(p.id);
+                  const secret =
+                    role === "MR_WHITE"
+                      ? "You are Mr. White"
+                      : role === "CIVILIAN"
+                      ? state.civilianWord
+                      : state.undercoverWord;
+                  const open = !!revealed[p.id];
+                  return (
+                    <button key={p.id} onClick={() => setRevealed((r) => ({ ...r, [p.id]: !r[p.id] }))} className="flip card tap-target relative h-40 w-full overflow-hidden">
+                      <div className={`flip-inner h-full w-full ${open ? "rotate-y-180" : ""}`} style={{ transform: open ? "rotateY(180deg)" : "none" }}>
+                        <div className="flip-front absolute inset-0 flex items-center justify-center p-3">
+                          <div className="text-center">
+                            <div className="heading text-lg">{p.name}</div>
+                            <div className="text-xs text-muted-foreground">Tap to reveal</div>
+                          </div>
+                        </div>
+                        <div className="flip-back absolute inset-0 flex items-center justify-center p-3">
+                          <div className="text-center">
+                            <div className="heading text-lg">{p.name}</div>
+                            <div className="mt-1 rounded bg-background/60 px-2 py-1 text-sm">{secret}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              (() => {
+                const p = state.players[revealIndex];
+                const pid = p?.id;
+                const role = pid ? roleMap.get(pid) : undefined;
                 const secret =
                   role === "MR_WHITE"
                     ? "You are Mr. White"
                     : role === "CIVILIAN"
                     ? state.civilianWord
                     : state.undercoverWord;
-                const open = !!revealed[p.id];
+                const viewed = pid ? !!hasRevealed[pid] : false;
+                const canToggle = !viewed || state.settings.allowRecheckWord;
                 return (
-                  <button key={p.id} onClick={() => setRevealed((r) => ({ ...r, [p.id]: !r[p.id] }))} className="flip card tap-target relative h-40 w-full overflow-hidden">
-                    <div className={`flip-inner h-full w-full ${open ? "rotate-y-180" : ""}`} style={{ transform: open ? "rotateY(180deg)" : "none" }}>
-                      <div className="flip-front absolute inset-0 flex items-center justify-center p-3">
-                        <div className="text-center">
-                          <div className="heading text-lg">{p.name}</div>
-                          <div className="text-xs text-muted-foreground">Tap to reveal</div>
+                  <div className="space-y-3">
+                    <div className="text-center text-sm text-muted-foreground">Pass to {p?.name}</div>
+                    <button
+                      disabled={!pid}
+                      onClick={() => {
+                        if (!pid) return;
+                        if (!isOpen) {
+                          setIsOpen(true);
+                          setHasRevealed((h) => ({ ...h, [pid]: true }));
+                        } else if (canToggle) {
+                          setIsOpen(false);
+                        }
+                      }}
+                      className="flip card tap-target relative mx-auto h-56 w-full overflow-hidden"
+                    >
+                      <div className={`flip-inner h-full w-full ${isOpen ? "rotate-y-180" : ""}`} style={{ transform: isOpen ? "rotateY(180deg)" : "none" }}>
+                        <div className="flip-front absolute inset-0 flex items-center justify-center p-3">
+                          <div className="text-center">
+                            <div className="heading text-lg">{p?.name}</div>
+                            <div className="text-xs text-muted-foreground">{isOpen ? "Hide" : "Tap to reveal"}</div>
+                          </div>
+                        </div>
+                        <div className="flip-back absolute inset-0 flex items-center justify-center p-3">
+                          <div className="text-center">
+                            <div className="heading text-lg">{p?.name}</div>
+                            <div className="mt-1 rounded bg-background/60 px-2 py-1 text-sm">{secret}</div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flip-back absolute inset-0 flex items-center justify-center p-3">
-                        <div className="text-center">
-                          <div className="heading text-lg">{p.name}</div>
-                          <div className="mt-1 rounded bg-background/60 px-2 py-1 text-sm">{secret}</div>
-                        </div>
+                    </button>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <div>
+                        Card {revealIndex + 1} of {state.players.length}
                       </div>
+                      <div>{state.settings.allowRecheckWord ? "Re-check enabled" : "No re-checks"}</div>
                     </div>
-                  </button>
+                    <button
+                      disabled={!pid || isOpen || !hasRevealed[pid]}
+                      onClick={() => {
+                        const next = revealIndex + 1;
+                        setRevealIndex(next);
+                        setIsOpen(false);
+                      }}
+                      className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40"
+                    >
+                      {revealIndex + 1 >= state.players.length ? "Finish Reveal" : "Next Player"}
+                    </button>
+                  </div>
                 );
-              })}
-            </div>
+              })()
+            )}
             <button disabled={!canStartRound} onClick={startRound} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black disabled:opacity-40">
               Start Round
             </button>
@@ -301,7 +375,10 @@ export default function PlayPage() {
               <h2 className="heading text-lg">Round</h2>
             </div>
             <div className="card p-4">
-              <h3 className="heading mb-3 text-base">Speaking Order</h3>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="heading text-base">Speaking Order</h3>
+                <div className="text-xs text-muted-foreground">Round {state.rounds.length}</div>
+              </div>
               <ol className="space-y-2">
                 {state.rounds[state.rounds.length - 1]?.speakingOrder.map((pid: string, i: number) => (
                   <li key={pid} className="rounded bg-muted-surface px-3 py-2">
@@ -311,6 +388,7 @@ export default function PlayPage() {
                 ))}
               </ol>
             </div>
+            <div className="text-xs text-muted-foreground">Remaining: {alivePlayers.map((p) => p.name).join(", ")}</div>
             <button onClick={proceedVoting} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
               Proceed to Voting
             </button>
@@ -400,6 +478,7 @@ export default function PlayPage() {
                 );
               })()}
             </div>
+            <div className="text-xs text-muted-foreground">Remaining: {alivePlayers.map((p) => p.name).join(", ")}</div>
             <button onClick={eliminatedContinue} className="tap-target w-full rounded-lg bg-accent px-4 py-3 font-medium text-black">
               Continue
             </button>
@@ -410,6 +489,13 @@ export default function PlayPage() {
           <div className="space-y-3">
             <div className="text-center">
               <h2 className="heading text-lg">Mr. White Guess</h2>
+              <p className="text-xs text-muted-foreground">
+                {(() => {
+                  const pid = state.rounds[state.rounds.length - 1]?.eliminatedPlayerId ?? "";
+                  const player = state.players.find((p) => p.id === pid);
+                  return `${player?.name || "Mr. White"} is guessing. Guess the Civilians' word.`;
+                })()}
+              </p>
             </div>
             <div className="card p-4 space-y-3">
               <input
@@ -426,16 +512,44 @@ export default function PlayPage() {
         )}
 
         {view === "win" && (
-          <div className="space-y-3 text-center">
+          <div className="space-y-4 text-center">
             <h1 className="heading text-3xl">
               {state.winners?.group === "CIVILIANS" ? "Civilians Win!" : state.winners?.group === "MR_WHITE" ? "Mr. White Wins!" : "Infiltrators Win!"}
             </h1>
-            <div className="card p-4">
-              <h2 className="heading mb-2 text-lg">Winners</h2>
+            <div className="card p-4 space-y-2">
+              <h2 className="heading text-lg">Winners</h2>
               <ul className="space-y-1">
                 {(state.winners?.playerIds ?? []).map((id) => (
                   <li key={id}>{state.players.find((p) => p.id === id)?.name}</li>
                 ))}
+              </ul>
+            </div>
+            <div className="card p-4 space-y-2 text-left">
+              <h3 className="heading text-base text-center">Full Reveal</h3>
+              <ul className="space-y-2">
+                {state.players.map((p) => {
+                  const role = roleMap.get(p.id);
+                  const badge =
+                    role === "CIVILIAN" ? "bg-green-600/20 text-green-300" : role === "UNDERCOVER" ? "bg-red-600/20 text-red-300" : "bg-yellow-600/20 text-yellow-300";
+                  const word = role === "MR_WHITE" ? "—" : role === "CIVILIAN" ? state.civilianWord : state.undercoverWord;
+                  const lastElim = state.rounds[state.rounds.length - 1]?.eliminatedPlayerId;
+                  let earned = 0;
+                  if (state.winners?.group === "CIVILIANS" && role === "CIVILIAN") earned = 2;
+                  if (state.winners?.group === "INFILTRATORS") earned = role === "UNDERCOVER" ? 10 : role === "MR_WHITE" ? 6 : 0;
+                  if (state.winners?.group === "MR_WHITE") earned = role === "MR_WHITE" && p.id === lastElim ? 6 : 0;
+                  return (
+                    <li key={p.id} className="flex items-center justify-between rounded-md border border-white/10 px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="heading">{p.name}</span>
+                        <span className={`rounded px-2 py-0.5 text-xs ${badge}`}>{role === "CIVILIAN" ? "Civilian" : role === "UNDERCOVER" ? "Undercover" : "Mr. White"}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground mr-2">{word}</span>
+                        <span className="font-medium">{earned > 0 ? `+${earned}` : ""}</span>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
             <div className="grid grid-cols-1 gap-2">

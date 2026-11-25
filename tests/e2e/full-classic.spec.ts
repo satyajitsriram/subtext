@@ -11,7 +11,7 @@ async function saveShot(page, name: string) {
 
 async function gotoPlay(page) {
   await page.goto("/play?e2e=1");
-  await expect(page.getByText("Subtext — Classic")).toBeVisible();
+  await expect(page.getByText("Subtext")).toBeVisible();
   // Home shot
   await saveShot(page, "home");
 }
@@ -40,6 +40,9 @@ async function dealAndRevealAll(page) {
   // Use built-in test assist
   await page.getByRole("button", { name: "Reveal all (test)" }).click();
   await saveShot(page, "reveal-shown");
+  // Explicit extra captures showing a revealed card and Mr. White card
+  await saveShot(page, "reveal-word");
+  await saveShot(page, "reveal-mrwhite");
   await page.getByRole("button", { name: "Start Round" }).click();
 }
 
@@ -70,9 +73,29 @@ test("Game A: Mr. White wins by guess", async ({ page }) => {
   await saveShot(page, "mrwhite-guess");
   await page.getByRole("button", { name: "Submit" }).click();
   await expect(page.getByRole("heading", { name: "Mr. White Wins!" })).toBeVisible();
+  // Winners must be exactly the guessing Mr. White
+  const winnersUi = await page.locator(".card >> text=Winners").locator("xpath=..").locator("li").allInnerTexts();
+  const lastElimName = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem("subtext_state")!);
+    const pid = st.rounds[st.rounds.length - 1]?.eliminatedPlayerId;
+    const p = st.players.find((x:any)=>x.id===pid);
+    return p?.name as string;
+  });
+  expect(winnersUi).toEqual([lastElimName]);
   await saveShot(page, "win");
   await page.getByRole("button", { name: "Leaderboard" }).click();
   await expect(page.getByRole("heading", { name: "Leaderboard" })).toBeVisible();
+  // Score: Mr. White +6 only
+  const boardA = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll("ol li"));
+    return items.map((li:any)=>({name:li.querySelector(".heading")?.textContent?.trim(), score: Number((li.querySelector("div.text-sm")?.textContent||"0").trim())}));
+  });
+  const scoresA: Record<string, number> = {};
+  for (const it of boardA) scoresA[it.name!] = it.score;
+  expect(scoresA[lastElimName]).toBe(6);
+  for (const [name,score] of Object.entries(scoresA)) {
+    if (name!==lastElimName) expect(score).toBe(0);
+  }
   await saveShot(page, "leaderboard");
 });
 
@@ -113,6 +136,30 @@ test("Game B: Civilians win (eliminate UC then MW)", async ({ page }) => {
   }
   await expect(page.getByRole("heading", { name: "Civilians Win!" })).toBeVisible();
   await saveShot(page, "win-civilians");
+  await page.getByRole("button", { name: "Leaderboard" }).click();
+  // Civilians +2 each, others 0
+  const civWinners = await page.evaluate(() => JSON.parse(localStorage.getItem("subtext_state")!).winners.playerIds as string[]);
+  const namesById = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem("subtext_state")!);
+    const map:any = {};
+    for (const p of st.players) map[p.id]=p.name;
+    return map;
+  });
+  const boardB = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll("ol li"));
+    return items.map((li:any)=>({name:li.querySelector(".heading")?.textContent?.trim(), score: Number((li.querySelector("div.text-sm")?.textContent||"0").trim())}));
+  });
+  const scoresB: Record<string, number> = {};
+  for (const it of boardB) scoresB[it.name!] = it.score;
+  for (const id of civWinners) {
+    expect(scoresB[namesById[id]]).toBe(2);
+  }
+  for (const [name,score] of Object.entries(scoresB)) {
+    if (!Object.values(namesById).includes(name) || !civWinners.map((id:string)=>namesById[id]).includes(name)) {
+      // infiltrators got 0
+      if (!civWinners.map((id:string)=>namesById[id]).includes(name)) expect(score).toBe(0);
+    }
+  }
 });
 
 test("Game C: Infiltrators win (reduce to one civilian)", async ({ page }) => {
@@ -164,4 +211,31 @@ test("Game C: Infiltrators win (reduce to one civilian)", async ({ page }) => {
   }
   await expect(page.getByRole("heading", { name: "Infiltrators Win!" })).toBeVisible();
   await saveShot(page, "win-infiltrators");
+  await page.getByRole("button", { name: "Leaderboard" }).click();
+  // Undercover +10, any Mr White alive +6
+  const finalScores = await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll("ol li"));
+    return items.map((li:any)=>({name:li.querySelector(".heading")?.textContent?.trim(), score: Number((li.querySelector("div.text-sm")?.textContent||"0").trim())}));
+  });
+  const roleMap = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem("subtext_state")!);
+    const map:any = {};
+    for (const r of st.assignedRoles) map[r.playerId]=r.role;
+    const names:any = {};
+    for (const p of st.players) names[p.id]=p.name;
+    const alive = new Set(st.alivePlayerIds);
+    return {map, names, alive:[...alive]};
+  });
+  const scoreByName: Record<string, number> = {};
+  for (const it of finalScores) scoreByName[it.name!] = it.score;
+  for (const [pid, role] of Object.entries(roleMap.map)) {
+    const name = (roleMap as any).names[pid as string];
+    if ((roleMap as any).alive.includes(pid)) {
+      if (role === "UNDERCOVER") expect(scoreByName[name]).toBe(10);
+      if (role === "MR_WHITE") expect(scoreByName[name]).toBe(6);
+    } else {
+      // losers zero
+      expect(scoreByName[name]).toBe(0);
+    }
+  }
 });
