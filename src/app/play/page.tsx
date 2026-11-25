@@ -4,6 +4,7 @@ import { useGame } from "@/lib/state";
 import { eliminatePlayer, beginRound, checkVictory, isLooseMatch, startNewGame } from "@/lib/engine";
 import { WORD_PAIRS_ALL } from "@/data/word-pairs";
 import { Avatar } from "@/components/Avatar";
+import { BrandMark } from "@/components/Brand";
 
 type View =
   | "home"
@@ -182,14 +183,22 @@ export default function PlayPage() {
         {/* top bar intentionally minimal per screen; remove redundant small 'Subtext' */}
 
         {view === "home" && (
-          <div className="card p-6 space-y-4 text-center">
-            <p className="text-sm text-muted-foreground">Offline party word game</p>
-            <button onClick={() => setView("players")} className="btn-primary w-full">
-              Start
-            </button>
-            <button onClick={() => setView("leaderboard")} className="btn-secondary w-full">
-              Leaderboard
-            </button>
+          <div className="text-center">
+            <div className="mx-auto mb-4 mt-8 w-[200px] h-[200px] relative">
+              <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%),repeating-linear-gradient(135deg,rgba(255,255,255,0.03)_0_8px,rgba(0,0,0,0.02)_8px_16px),linear-gradient(180deg,var(--surface),var(--muted-surface))] shadow-[0_18px_40px_rgba(0,0,0,0.45)] border border-white/10" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <BrandMark size={120} />
+              </div>
+            </div>
+            <h1 className="heading text-5xl font-semibold tracking-wide">Subtext</h1>
+            <p className="mt-3 text-base text-muted-foreground">Pass‑and‑play social deduction word game</p>
+            <nav className="mt-6 flex items-center justify-center gap-4">
+              <button onClick={() => setView("leaderboard")} className="underline text-sm underline-offset-4 text-foreground/90">Leaderboard</button>
+              <button onClick={() => { if (typeof window !== "undefined") window.location.href = "/rules"; }} className="underline text-sm underline-offset-4 text-foreground/70">How to play</button>
+            </nav>
+            <div className="action-bar">
+              <button onClick={() => setView("players")} className="btn-primary w-full">Start</button>
+            </div>
           </div>
         )}
 
@@ -258,7 +267,7 @@ export default function PlayPage() {
         )}
 
         {view === "setup" && (
-          <div className="space-y-3">
+          <div className="min-h-[calc(100dvh-150px)] flex flex-col justify-center gap-3">
             <div className="card p-4 space-y-3">
               <div className="text-sm text-muted-foreground">Players: {state.players.length}</div>
               {/* Role summary */}
@@ -356,7 +365,7 @@ export default function PlayPage() {
         )}
 
         {view === "reveal" && (
-          <div className="space-y-3">
+          <div className="min-h-[calc(100dvh-150px)] flex flex-col justify-center gap-3">
             <div className="text-center">
               <h2 className="heading text-lg">Pass & Reveal</h2>
               <p className="text-xs text-muted-foreground">
@@ -483,7 +492,7 @@ export default function PlayPage() {
                     <div className="action-bar">
                       {revealIndex + 1 < state.players.length ? (
                         <button
-                          disabled={!pid || isOpen || !hasRevealed[pid]}
+                          disabled={!pid || !hasRevealed[pid]}
                           onClick={() => {
                             const next = revealIndex + 1;
                             setRevealIndex(next);
@@ -537,7 +546,7 @@ export default function PlayPage() {
         )}
 
         {view === "vote" && (
-          <div className="space-y-3">
+          <div className="min-h-[calc(100dvh-150px)] flex flex-col justify-center gap-3">
             <div className="text-center">
               <h2 className="heading text-lg">{tiedIds ? "Tie Face-off" : "Voting"}</h2>
               <p className="text-xs text-muted-foreground">

@@ -83,8 +83,8 @@ async function captureRoundAndVote(page, pickName: string) {
   await saveShot(page, "round");
   await page.getByRole("button", { name: "Proceed to Voting" }).click();
   await expect(page.getByRole("heading", { name: "Voting" })).toBeVisible();
-  await saveShot(page, "vote");
   await page.getByRole("button", { name: pickName }).click();
+  await saveShot(page, "vote");
   await page.getByRole("button", { name: /Confirm Elimination|Resolve Tie/ }).click();
 }
 

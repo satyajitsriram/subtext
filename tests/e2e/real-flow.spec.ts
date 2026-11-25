@@ -32,10 +32,11 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
     await input.press("Enter");
   };
   for (const n of ["Alice", "Bob", "Carol", "Dave", "Erin"]) await addName(n);
-  await page.getByRole("button", { name: "Continue to Setup" }).click();
-  await expect(page.getByRole("button", { name: "Deal Words" })).toBeVisible();
+  // Capture players screen BEFORE continuing
   await saveShot(page, "players-real");
   await saveShot(page, "players");
+  await page.getByRole("button", { name: "Continue to Setup" }).click();
+  await expect(page.getByRole("button", { name: "Deal Words" })).toBeVisible();
 
   // Setup
   await saveShot(page, "setup-real");
@@ -87,7 +88,13 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
   }
   // Hide and go next repeatedly
   await flip.click(); // hide
-  await page.getByRole("button", { name: "Next Player" }).click();
+  const nextOnce = page.getByRole("button", { name: "Next Player" });
+  const startOnce = page.getByRole("button", { name: "Start Round" });
+  if (await nextOnce.isVisible().catch(() => false)) {
+    await nextOnce.click();
+  } else if (await startOnce.isVisible().catch(() => false)) {
+    await startOnce.click();
+  }
   // Quickly step through the rest (robust against variable counts)
   for (let i = 0; i < 10; i++) {
     const hasNext = await page.getByRole("button", { name: /Next Player|Finish Reveal/ }).isVisible().catch(() => false);
@@ -110,9 +117,9 @@ test("Real flow: pass-and-play reveal to elimination (no test UI)", async ({ pag
 
   // Vote and eliminate any player
   await expect(page.getByRole("heading", { name: "Voting" })).toBeVisible();
-  await saveShot(page, "vote-real");
   const firstBtn = page.getByRole("button", { name: "Alice" });
-  await firstBtn.click();
+  await firstBtn.click(); // show selected state
+  await saveShot(page, "vote-real");
   await page.getByRole("button", { name: /Confirm Elimination/ }).click();
 
   // Elimination or Mr. White Guess
