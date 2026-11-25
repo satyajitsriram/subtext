@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/Brand";
 
 export default function Home() {
   return (
     <main className="flex min-h-[100dvh] flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-md space-y-8">
         <header className="text-center">
+          <div className="mb-2 flex justify-center">
+            <BrandMark size={56} />
+          </div>
           <h1 className="heading text-4xl font-semibold text-foreground">Subtext</h1>
           <p className="mt-2 text-sm text-muted-foreground">Pass-and-play social deduction word game</p>
         </header>
