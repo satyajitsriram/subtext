@@ -30,6 +30,7 @@ export interface GameSettings {
   numMrWhites: number;
   revealOnElimination: boolean; // official app reveals; toggleable
   allowRecheckWord: boolean;
+  soundsEnabled?: boolean; // off by default
   tieBreaker: TieBreaker;
   includeSpicy: boolean; // off by default
   categories: string[]; // empty = all

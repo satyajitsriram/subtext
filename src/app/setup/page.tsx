@@ -97,6 +97,14 @@ export default function SetupPage() {
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
+              checked={!!state.settings.soundsEnabled}
+              onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { soundsEnabled: e.target.checked } })}
+            />
+            <span className="text-sm">Enable subtle sounds (off by default)</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
               checked={state.settings.includeSpicy}
               onChange={(e) => dispatch({ type: "UPDATE_SETTINGS", settings: { includeSpicy: e.target.checked } })}
             />

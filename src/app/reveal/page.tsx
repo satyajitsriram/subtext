@@ -17,6 +17,29 @@ export default function RevealPage() {
   const { state, dispatch } = useGame();
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const roles = new Map(state.assignedRoles?.map((r) => [r.playerId, r.role]) ?? []);
+  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
+
+  useEffect(() => {
+    if (state.settings.soundsEnabled && typeof window !== "undefined") {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioCtx(ctx);
+      return () => ctx.close();
+    }
+  }, [state.settings.soundsEnabled]);
+
+  const beep = () => {
+    if (!state.settings.soundsEnabled || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = 680;
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.14);
+  };
 
   useEffect(() => {
     if (!state.assignedRoles) router.replace("/setup");
@@ -27,6 +50,7 @@ export default function RevealPage() {
   const showWord = (playerId: string) => {
     setRevealed((r) => ({ ...r, [playerId]: !r[playerId] }));
     vibrateBrief();
+    beep();
   };
 
   const canContinue = state.players.every((p) => revealed[p.id]);

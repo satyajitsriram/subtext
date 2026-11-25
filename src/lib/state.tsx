@@ -25,6 +25,7 @@ const defaultSettings: GameSettings = {
   numMrWhites: 1,
   revealOnElimination: true,
   allowRecheckWord: true,
+  soundsEnabled: false,
   tieBreaker: "revote",
   includeSpicy: false,
   categories: [],
